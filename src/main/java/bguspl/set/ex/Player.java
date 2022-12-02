@@ -1,12 +1,18 @@
 package bguspl.set.ex;
 
+import java.util.Random;
+
 import bguspl.set.Env;
+
+//import java.lang.Math;
 
 /**
  * This class manages the players' threads and data
  *
  * @inv id >= 0
  * @inv score >= 0
+ * @inv usedTocken <= 3
+ * @inv usedTocken >= 0
  */
 public class Player implements Runnable {
 
@@ -57,6 +63,14 @@ public class Player implements Runnable {
      */
     private int usedTockens;
     /**
+     * the places of the tockens on the board
+     */
+    private int[] tockenPlaces;
+
+    private final int MAX_SLOTS = 11; // MN
+    private final int NOT_PLACED = -1;// MN
+
+    /**
      * The class constructor.
      *
      * @param env    - the environment object.
@@ -71,6 +85,8 @@ public class Player implements Runnable {
         this.table = table;
         this.id = id;
         this.human = human;
+        usedTockens = 0;
+        tockenPlaces = new int[] { NOT_PLACED, NOT_PLACED, NOT_PLACED };
     }
 
     /**
@@ -105,8 +121,11 @@ public class Player implements Runnable {
         // note: this is a very very smart AI (!)
         aiThread = new Thread(() -> {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+            Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
+                this.keyPressed(rnd.nextInt(MAX_SLOTS));
+
                 try {
                     synchronized (this) {
                         wait();
@@ -138,6 +157,14 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
+        System.out.println("check val: " + slot);// probeb num from 0 to 11
+        boolean res = setTockIfNeed(slot);
+        if (res)
+            usedTockens++;
+        else
+            usedTockens--;
+        // add/remove tocken to card
+
     }
 
     /**
@@ -148,7 +175,7 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-        usedTockens = 0; //reset
+        usedTockens = 0; // reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
@@ -170,5 +197,24 @@ public class Player implements Runnable {
 
     public int getScore() {
         return score;
+    }
+
+    boolean setTockIfNeed(int slot) {//redesign
+        if(slot == tockenPlaces[0]){
+            tockenPlaces[0] = NOT_PLACED;
+            return false;
+        } 
+        if(slot == tockenPlaces[1]){
+            tockenPlaces[1] = NOT_PLACED;
+            return false;
+        } 
+        if(slot == tockenPlaces[2]){
+            tockenPlaces[2] = NOT_PLACED;
+            return false;
+        } 
+        if (usedTockens < 3) {
+            
+        }
+        return true;
     }
 }
