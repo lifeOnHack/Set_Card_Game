@@ -52,6 +52,11 @@ public class Player implements Runnable {
     private int score;
 
     /**
+     * the number of tockens the player put
+     * Max 3
+     */
+    private int usedTockens;
+    /**
      * The class constructor.
      *
      * @param env    - the environment object.
@@ -121,7 +126,7 @@ public class Player implements Runnable {
     public void terminate() {
         terminate = true;
         if (!human) {
-
+            aiThread.interrupt();
         }
         // TODO implement
     }
@@ -143,7 +148,7 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-
+        usedTockens = 0; //reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
