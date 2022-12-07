@@ -2,6 +2,7 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,7 +22,7 @@ public class Dealer implements Runnable {
      */
     private final Table table;
     private final Player[] players;
-
+    private final LinkedList<Integer> plysCheckReq;
     /**
      * The list of card ids that are left in the dealer's deck.
      */
@@ -42,6 +43,7 @@ public class Dealer implements Runnable {
         this.table = table;
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
+        plysCheckReq = new LinkedList<Integer>();
     }
 
     /**
@@ -61,7 +63,8 @@ public class Dealer implements Runnable {
     }
 
     /**
-     * The inner loop of the dealer thread that runs as long as the countdown did not time out.
+     * The inner loop of the dealer thread that runs as long as the countdown did
+     * not time out.
      */
     private void timerLoop() {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
@@ -89,7 +92,8 @@ public class Dealer implements Runnable {
     }
 
     /**
-     * Checks if any cards should be removed from the table and returns them to the deck.
+     * Checks if any cards should be removed from the table and returns them to the
+     * deck.
      */
     private void removeCardsFromTable() {
         // TODO implement
@@ -103,7 +107,8 @@ public class Dealer implements Runnable {
     }
 
     /**
-     * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
+     * Sleep for a fixed amount of time or until the thread is awakened for some
+     * purpose.
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
@@ -128,5 +133,11 @@ public class Dealer implements Runnable {
      */
     private void announceWinners() {
         // TODO implement
+    }
+
+    public void addCheckReq(int p) {
+        synchronized (plysCheckReq) {
+            plysCheckReq.addLast(p);
+        }
     }
 }

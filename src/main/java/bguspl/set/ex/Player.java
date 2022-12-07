@@ -199,21 +199,21 @@ public class Player implements Runnable {
         return score;
     }
 
-    boolean setTockIfNeed(int slot) {//redesign
-        if(slot == tockenPlaces[0]){
+    boolean setTockIfNeed(int slot) {// redesign
+        if (slot == tockenPlaces[0]) {
             tockenPlaces[0] = NOT_PLACED;
             return false;
-        } 
-        if(slot == tockenPlaces[1]){
+        }
+        if (slot == tockenPlaces[1]) {
             tockenPlaces[1] = NOT_PLACED;
             return false;
-        } 
-        if(slot == tockenPlaces[2]){
+        }
+        if (slot == tockenPlaces[2]) {
             tockenPlaces[2] = NOT_PLACED;
             return false;
-        } 
+        }
         if (usedTockens < 3) {
-            
+
         }
         return true;
     }
