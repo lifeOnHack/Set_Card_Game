@@ -28,6 +28,9 @@ public class Table {
      * Mapping between a card and the slot it is in (null if none).
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
+    private Integer[][] playersSets;
+
+    private final int NOT_PLACED = -1;
 
     /**
      * Constructor for testing.
@@ -43,6 +46,11 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
+
+        this.playersSets = new Integer[env.config.players][3];
+        if (playersSets[0] == null) {
+            System.err.println("null playersSets");
+        }
     }
 
     /**
@@ -97,11 +105,11 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
-
+        // TODO implement
+        // check null
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
 
-        // TODO implement
     }
 
     /**
@@ -116,7 +124,12 @@ public class Table {
         }
 
         // TODO implement
+        cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
+    }
+
+    public void removeByCard(int card) {
+        removeCard(cardToSlot[card]);
     }
 
     /**
@@ -139,5 +152,29 @@ public class Table {
     public boolean removeToken(int player, int slot) {
         // TODO implement
         return false;
+    }
+
+    int setTockIfNeed(int pId, int slot) {// redesign
+        Integer[] c = playersSets[pId];
+        for (int i = 0; i < c.length; i++) {
+            if (slot == c[i]) {
+                c[i] = NOT_PLACED;
+                return -1;
+            }
+        }
+        for (int i = 0; i < c.length; i++) {
+            if (NOT_PLACED == c[i]) {
+                c[i] = slot;
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    /*
+     * clear player tockens
+     */
+    void reset() {
+
     }
 }

@@ -1,5 +1,6 @@
 package bguspl.set.ex;
 
+import java.util.Queue;
 import java.util.Random;
 
 import bguspl.set.Env;
@@ -66,9 +67,15 @@ public class Player implements Runnable {
      * the places of the tockens on the board
      */
     private int[] tockenPlaces;
+    /*
+     * input queue of keys
+     * max size 3
+     */
+    Queue<Integer> inputQ;
 
     private final int MAX_SLOTS = 11; // MN
     private final int NOT_PLACED = -1;// MN
+    private final int Q_MAX_INP = 3;// MN
 
     /**
      * The class constructor.
@@ -99,6 +106,16 @@ public class Player implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         if (!human)
             createArtificialIntelligence();
+        synchronized (inputQ) {
+            while (inputQ.size() == 0)
+                try {
+                    wait();
+                } catch (InterruptedException ignored) {
+                }
+            while (inputQ.size() > 0)
+                usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
+            // add/remove tocken to card
+        }
 
         while (!terminate) {
             // TODO implement main player loop
@@ -124,7 +141,7 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
-                this.keyPressed(rnd.nextInt(MAX_SLOTS));
+                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
 
                 try {
                     synchronized (this) {
@@ -158,12 +175,11 @@ public class Player implements Runnable {
     public void keyPressed(int slot) {
         // TODO implement
         System.out.println("check val: " + slot);// probeb num from 0 to 11
-        boolean res = setTockIfNeed(slot);
-        if (res)
-            usedTockens++;
-        else
-            usedTockens--;
-        // add/remove tocken to card
+        synchronized (inputQ) {
+            if (inputQ.size() < Q_MAX_INP) {
+                inputQ.add(slot);
+            }
+        }
 
     }
 
@@ -193,28 +209,20 @@ public class Player implements Runnable {
             Thread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
+        inputQ.clear();
     }
 
     public int getScore() {
         return score;
     }
 
-    boolean setTockIfNeed(int slot) {// redesign
-        if (slot == tockenPlaces[0]) {
-            tockenPlaces[0] = NOT_PLACED;
-            return false;
-        }
-        if (slot == tockenPlaces[1]) {
-            tockenPlaces[1] = NOT_PLACED;
-            return false;
-        }
-        if (slot == tockenPlaces[2]) {
-            tockenPlaces[2] = NOT_PLACED;
-            return false;
-        }
-        if (usedTockens < 3) {
+    /*
+     * start from zero object values
+     * clear Q
+     * 
+     */
+    void reset() {
 
-        }
-        return true;
     }
+
 }

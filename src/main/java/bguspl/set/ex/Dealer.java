@@ -112,6 +112,11 @@ public class Dealer implements Runnable {
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
+        try {
+            Thread.sleep(env.config.turnTimeoutMillis);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     /**
@@ -138,6 +143,8 @@ public class Dealer implements Runnable {
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
             plysCheckReq.addLast(p);
+            notify();
         }
+
     }
 }
