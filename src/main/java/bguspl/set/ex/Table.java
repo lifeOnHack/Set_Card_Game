@@ -81,7 +81,7 @@ public class Table {
         for (Integer card : slotToCard)
             if (card != null)
                 ++cards;
-        return cards;
+        return cards; //one one checking 
     }
 
     /**
