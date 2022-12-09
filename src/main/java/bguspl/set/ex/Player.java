@@ -1,12 +1,19 @@
 package bguspl.set.ex;
 
+import java.util.Queue;
+import java.util.Random;
+
 import bguspl.set.Env;
+
+//import java.lang.Math;
 
 /**
  * This class manages the players' threads and data
  *
  * @inv id >= 0
  * @inv score >= 0
+ * @inv usedTocken <= 3
+ * @inv usedTocken >= 0
  */
 public class Player implements Runnable {
 
@@ -52,6 +59,25 @@ public class Player implements Runnable {
     private int score;
 
     /**
+     * the number of tockens the player put
+     * Max 3
+     */
+    private int usedTockens;
+    /**
+     * the places of the tockens on the board
+     */
+    private int[] tockenPlaces;
+    /*
+     * input queue of keys
+     * max size 3
+     */
+    Queue<Integer> inputQ;
+
+    private final int MAX_SLOTS = 11; // MN
+    private final int NOT_PLACED = -1;// MN
+    private final int Q_MAX_INP = 3;// MN
+
+    /**
      * The class constructor.
      *
      * @param env    - the environment object.
@@ -66,6 +92,8 @@ public class Player implements Runnable {
         this.table = table;
         this.id = id;
         this.human = human;
+        usedTockens = 0;
+        tockenPlaces = new int[] { NOT_PLACED, NOT_PLACED, NOT_PLACED };
     }
 
     /**
@@ -78,6 +106,16 @@ public class Player implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         if (!human)
             createArtificialIntelligence();
+        synchronized (inputQ) {
+            while (inputQ.size() == 0)
+                try {
+                    wait();
+                } catch (InterruptedException ignored) {
+                }
+            while (inputQ.size() > 0)
+                usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
+            // add/remove tocken to card
+        }
 
         while (!terminate) {
             // TODO implement main player loop
@@ -100,8 +138,11 @@ public class Player implements Runnable {
         // note: this is a very very smart AI (!)
         aiThread = new Thread(() -> {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+            Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
+                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+
                 try {
                     synchronized (this) {
                         wait();
@@ -121,7 +162,7 @@ public class Player implements Runnable {
     public void terminate() {
         terminate = true;
         if (!human) {
-
+            aiThread.interrupt();
         }
         // TODO implement
     }
@@ -133,6 +174,13 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
+        System.out.println("check val: " + slot);// probeb num from 0 to 11
+        synchronized (inputQ) {
+            if (inputQ.size() < Q_MAX_INP) {
+                inputQ.add(slot);
+            }
+        }
+
     }
 
     /**
@@ -143,7 +191,7 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-
+        usedTockens = 0; // reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
@@ -161,9 +209,20 @@ public class Player implements Runnable {
             Thread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
+        inputQ.clear();
     }
 
     public int getScore() {
         return score;
     }
+
+    /*
+     * start from zero object values
+     * clear Q
+     * 
+     */
+    void reset() {
+
+    }
+
 }
