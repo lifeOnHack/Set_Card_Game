@@ -106,19 +106,19 @@ public class Player implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         if (!human)
             createArtificialIntelligence();
-        synchronized (inputQ) {
-            while (inputQ.size() == 0)
-                try {
-                    wait();
-                } catch (InterruptedException ignored) {
-                }
-            while (inputQ.size() > 0)
-                usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
-            // add/remove tocken to card
-        }
 
         while (!terminate) {
             // TODO implement main player loop
+            synchronized (inputQ) {
+                while (inputQ.size() == 0)
+                    try {
+                        wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                while (inputQ.size() > 0)
+                    usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
+                // add/remove tocken to card
+            }
         }
         if (!human)
             try {
@@ -191,7 +191,7 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-        usedTockens = 0; // reset
+        reset(); // reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
@@ -205,11 +205,12 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
+        reset();
         try {
             Thread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        inputQ.clear();
+
     }
 
     public int getScore() {
@@ -222,7 +223,8 @@ public class Player implements Runnable {
      * 
      */
     void reset() {
-
+        this.inputQ.clear();
+        usedTockens = 0;
     }
 
 }
