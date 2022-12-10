@@ -112,12 +112,15 @@ public class Player implements Runnable {
             synchronized (inputQ) {
                 while (inputQ.size() == 0)
                     try {
-                        wait();
+                        inputQ.wait();
                     } catch (InterruptedException ignored) {
                     }
-                while (inputQ.size() > 0)
+                while (inputQ.size() > 0) {
+                    // add/remove tocken to card
                     usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
-                // add/remove tocken to card
+                    inputQ.notifyAll();
+                }
+
             }
         }
         if (!human)
@@ -141,14 +144,25 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
-                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
-
-                try {
-                    synchronized (this) {
-                        wait();
-                    }
-                } catch (InterruptedException ignored) {
+                synchronized (inputQ) {
+                    if (inputQ.size() == MAX_SLOTS)
+                        try {
+                            inputQ.wait();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                            break;
+                        }
                 }
+                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+                /*
+                 * try {
+                 * synchronized (this) {
+                 * wait();
+                 * }
+                 * } catch (InterruptedException ignored) {
+                 * }
+                 */
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
@@ -180,7 +194,6 @@ public class Player implements Runnable {
                 inputQ.add(slot);
             }
         }
-
     }
 
     /**
@@ -222,7 +235,7 @@ public class Player implements Runnable {
      * clear Q
      * 
      */
-    void reset() {
+    private void reset() {
         this.inputQ.clear();
         usedTockens = 0;
     }
