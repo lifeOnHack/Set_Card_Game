@@ -149,7 +149,6 @@ public class Player implements Runnable {
                         try {
                             inputQ.wait();
                         } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                             break;
                         }
@@ -178,7 +177,6 @@ public class Player implements Runnable {
         if (!human) {
             aiThread.interrupt();
         }
-        // TODO implement
     }
 
     /**
