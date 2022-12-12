@@ -79,7 +79,10 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated due to an external event.
      */
     public void terminate() {
-        // TODO implement
+        terminate = true;
+        for (Player p : players) {
+            p.terminate();
+        }
     }
 
     /**
@@ -97,6 +100,13 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         // TODO implement
+        Integer[] cardArr = table.getSTC();
+        for (int i = 0; i < cardArr.length; i++) {
+            if (cardArr[i] == null) {
+
+            }
+        }
+
     }
 
     /**
@@ -137,7 +147,23 @@ public class Dealer implements Runnable {
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
-        // TODO implement
+        int bestScore = -1;
+        int numOfWinners = 0;
+        for (Player player : players) {
+            if (player.getScore() > bestScore) {
+                bestScore = player.getScore();
+                numOfWinners = 1;
+            } else if (player.getScore() == bestScore) {
+                numOfWinners++;
+            }
+        }
+        int[] winners = new int[numOfWinners];
+        for (Player player : players) {
+            if (player.getScore() == bestScore) {
+                winners[--numOfWinners] = player.id;
+            }
+        }
+        env.ui.announceWinner(winners);
     }
 
     public void addCheckReq(int p) {
