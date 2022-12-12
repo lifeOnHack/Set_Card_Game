@@ -117,7 +117,7 @@ public class Player implements Runnable {
                     }
                 while (inputQ.size() > 0) {
                     // add/remove tocken to card
-                    usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
+                    usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
                     inputQ.notifyAll();
                 }
 
