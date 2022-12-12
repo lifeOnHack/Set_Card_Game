@@ -26,7 +26,10 @@ public class Player implements Runnable {
      * Game entities.
      */
     private final Table table;
-
+    /*
+     * Dealer of the game
+     */
+    private final Dealer dlr;
     /**
      * The id of the player (starting from 0).
      */
@@ -88,6 +91,7 @@ public class Player implements Runnable {
      *               manually, via the keyboard).
      */
     public Player(Env env, Dealer dealer, Table table, int id, boolean human) {
+        this.dlr = dealer;
         this.env = env;
         this.table = table;
         this.id = id;
@@ -119,6 +123,9 @@ public class Player implements Runnable {
                     // add/remove tocken to card
                     usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
                     inputQ.notifyAll();
+                    if (usedTockens == Q_MAX_INP) {
+                        dlr.addCheckReq(id);
+                    }
                 }
 
             }
