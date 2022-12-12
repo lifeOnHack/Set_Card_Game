@@ -106,19 +106,22 @@ public class Player implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         if (!human)
             createArtificialIntelligence();
-        synchronized (inputQ) {
-            while (inputQ.size() == 0)
-                try {
-                    wait();
-                } catch (InterruptedException ignored) {
-                }
-            while (inputQ.size() > 0)
-                usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
-            // add/remove tocken to card
-        }
 
         while (!terminate) {
             // TODO implement main player loop
+            synchronized (inputQ) {
+                while (inputQ.size() == 0)
+                    try {
+                        inputQ.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                while (inputQ.size() > 0) {
+                    // add/remove tocken to card
+                    usedTockens += table.setTockIfNeed(this.id, inputQ.remove());
+                    inputQ.notifyAll();
+                }
+
+            }
         }
         if (!human)
             try {
@@ -141,14 +144,24 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
-                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
-
-                try {
-                    synchronized (this) {
-                        wait();
-                    }
-                } catch (InterruptedException ignored) {
+                synchronized (inputQ) {
+                    if (inputQ.size() == MAX_SLOTS)
+                        try {
+                            inputQ.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
                 }
+                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+                /*
+                 * try {
+                 * synchronized (this) {
+                 * wait();
+                 * }
+                 * } catch (InterruptedException ignored) {
+                 * }
+                 */
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
@@ -164,7 +177,6 @@ public class Player implements Runnable {
         if (!human) {
             aiThread.interrupt();
         }
-        // TODO implement
     }
 
     /**
@@ -180,7 +192,6 @@ public class Player implements Runnable {
                 inputQ.add(slot);
             }
         }
-
     }
 
     /**
@@ -191,7 +202,7 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-        usedTockens = 0; // reset
+        reset(); // reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
@@ -205,11 +216,12 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
+        reset();
         try {
             Thread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        inputQ.clear();
+
     }
 
     public int getScore() {
@@ -221,8 +233,9 @@ public class Player implements Runnable {
      * clear Q
      * 
      */
-    void reset() {
-
+    private void reset() {
+        this.inputQ.clear();
+        usedTockens = 0;
     }
 
 }

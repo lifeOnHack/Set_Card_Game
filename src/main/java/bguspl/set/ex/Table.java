@@ -154,25 +154,28 @@ public class Table {
         return false;
     }
 
-    int setTockIfNeed(int pId, int slot) {// redesign
+    /*
+     * deciding if to place or remove a token
+     */
+    int setTokIfNeed(int pId, int slot) {
         Integer[] c = playersSets[pId];
         for (int i = 0; i < c.length; i++) {
             if (slot == c[i]) {
                 c[i] = NOT_PLACED;
-                return -1;
+                return -1;//call removeToken
             }
         }
         for (int i = 0; i < c.length; i++) {
             if (NOT_PLACED == c[i]) {
                 c[i] = slot;
-                return 1;
+                return 1;//call placeToken
             }
         }
         return 0;
     }
 
     /*
-     * clear player tockens
+     * clear players tockens
      */
     void reset() {
 
