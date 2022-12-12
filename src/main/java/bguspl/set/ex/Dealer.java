@@ -70,7 +70,7 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();
+            removeCardsFromTable(false);
             placeCardsOnTable();
         }
     }
@@ -98,15 +98,14 @@ public class Dealer implements Runnable {
      * Checks if any cards should be removed from the table and returns them to the
      * deck.
      */
-    private void removeCardsFromTable() {
+    private void removeCardsFromTable(Boolean all) {
         // TODO implement
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
-            if (cardArr[i] == null) {
-
+            if (all || cardArr[i] == null) {
+                env.ui.removeCard(i);
             }
         }
-
     }
 
     /**
@@ -140,7 +139,7 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
-        // TODO implement
+        removeCardsFromTable(true);
     }
 
     /**
