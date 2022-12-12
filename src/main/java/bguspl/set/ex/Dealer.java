@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
+import bguspl.set.Util;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +38,8 @@ public class Dealer implements Runnable {
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
     private long reshuffleTime = Long.MAX_VALUE;
+    private final long MIN_IN_MS = 60000;
+    private final long FIVE_SEC = 5000;
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -53,9 +56,12 @@ public class Dealer implements Runnable {
     public void run() {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         while (!shouldFinish()) {
+            updateTimerDisplay(true);
             placeCardsOnTable();
+            // add notify players
             timerLoop();
             updateTimerDisplay(false);
+            // add wait
             removeAllCardsFromTable();
         }
         announceWinners();
@@ -70,8 +76,8 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable(false);
-            placeCardsOnTable();
+            removeCardsFromTable(false);// may not need
+            placeCardsOnTable();// may not need
         }
     }
 
@@ -104,6 +110,7 @@ public class Dealer implements Runnable {
         for (int i = 0; i < cardArr.length; i++) {
             if (all || cardArr[i] == null) {
                 env.ui.removeCard(i);
+                cardArr[i] = null;
             }
         }
     }
@@ -113,6 +120,14 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+        Integer[] cardArr = table.getSTC();
+        for (int i = 0; i < cardArr.length; i++) {
+            if (cardArr[i] == null) {
+                int cc = deck.remove(0);
+                table.placeCard(cc, i);
+                // env.ui.placeCard(cc, i);
+            }
+        }
     }
 
     /**
@@ -133,6 +148,12 @@ public class Dealer implements Runnable {
      */
     private void updateTimerDisplay(boolean reset) {
         // TODO implement
+        long t = System.currentTimeMillis();
+        if (reset) {
+            reshuffleTime = t + MIN_IN_MS;
+        }
+        env.ui.setCountdown(reshuffleTime - t, reshuffleTime - t <= FIVE_SEC);
+        // setElapsed
     }
 
     /**
@@ -168,7 +189,7 @@ public class Dealer implements Runnable {
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
             plysCheckReq.addLast(p);
-            notify();
+            Thread.currentThread().interrupt();
         }
 
     }
