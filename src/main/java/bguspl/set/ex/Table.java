@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
+import bguspl.set.UserInterfaceImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,7 @@ public class Table {
     private Integer[][] playersSets;
 
     private final int NOT_PLACED = -1;
+    private final int MAX_TOKENS = 3;
 
     /**
      * Constructor for testing.
@@ -53,6 +55,9 @@ public class Table {
         }
     }
 
+    public Integer[] getSTC(){
+        return slotToCard;
+    }
     /**
      * Constructor for actual usage.
      *
@@ -89,7 +94,7 @@ public class Table {
         for (Integer card : slotToCard)
             if (card != null)
                 ++cards;
-        return cards; //one one checking 
+        return cards;
     }
 
     /**
@@ -105,10 +110,10 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
-        // TODO implement
         // check null
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
+        env.ui.placeCard(card, slot);
 
     }
 
@@ -122,10 +127,9 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
-
-        // TODO implement
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
+        env.ui.removeCard(slot);
     }
 
     public void removeByCard(int card) {
@@ -138,8 +142,17 @@ public class Table {
      * @param player - the player the token belongs to.
      * @param slot   - the slot on which to place the token.
      */
-    public void placeToken(int player, int slot) {
-        // TODO implement
+    public void placeToken(int pId, int slot) {
+        Integer[] pTokens = playersSets[pId];
+        for (int i = 0; i < MAX_TOKENS; i++) {
+            if (NOT_PLACED == pTokens[i]) {
+                synchronized(pTokens){
+                    pTokens[i] = slot;
+                }
+                env.ui.placeToken(pId, slot);
+                break;
+            }
+        }
     }
 
     /**
@@ -149,35 +162,45 @@ public class Table {
      * @param slot   - the slot from which to remove the token.
      * @return - true iff a token was successfully removed.
      */
-    public boolean removeToken(int player, int slot) {
-        // TODO implement
+    public boolean removeToken(int pId, int slot) {
+        Integer[] pTokens = playersSets[pId];
+        for (int i = 0; i < MAX_TOKENS; i++) {
+            if (slot == pTokens[i]) {
+                synchronized(pTokens){
+                    pTokens[i] = NOT_PLACED;
+                }
+                env.ui.removeToken(pId, slot);
+                return true;
+            }
+        }
         return false;
     }
 
     /*
      * deciding if to place or remove a token
      */
-    int setTokIfNeed(int pId, int slot) {
-        Integer[] c = playersSets[pId];
-        for (int i = 0; i < c.length; i++) {
-            if (slot == c[i]) {
-                c[i] = NOT_PLACED;
-                return -1;//call removeToken
-            }
+    public int setTokIfNeed(int pId, int slot) { 
+        if(removeToken(pId, slot)){
+            return -1;
         }
-        for (int i = 0; i < c.length; i++) {
-            if (NOT_PLACED == c[i]) {
-                c[i] = slot;
-                return 1;//call placeToken
-            }
-        }
+        placeToken(pId, slot);
         return 0;
     }
 
     /*
-     * clear players tockens
+     * clear players tokens
      */
-    void reset() {
+    public void reset() {
+        for(int i = 0; i < playersSets.length; i++){
+            resetPlayer(playersSets[i]);
+        }
+    }
 
+    public void resetPlayer(Integer[] pTokens){
+        synchronized(pTokens){
+            for(int j = 0; j < MAX_TOKENS; j++){
+                pTokens[j] = NOT_PLACED;
+            }
+        }
     }
 }
