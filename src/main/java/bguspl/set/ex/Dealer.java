@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
-
 /**
  * This class manages the dealer's threads and data
  */
@@ -132,6 +130,7 @@ public class Dealer implements Runnable {
         if (curset != null) {
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
+                deck.add(curset[i]);
             }
         }
         curset = null;
@@ -185,6 +184,7 @@ public class Dealer implements Runnable {
     private void removeAllCardsFromTable() {
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
+            deck.add(cardArr[i]);
             table.removeCard(i);
         }
     }
