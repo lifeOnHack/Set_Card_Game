@@ -1,7 +1,6 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
-import bguspl.set.Util;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +22,7 @@ public class Dealer implements Runnable {
      */
     private final Table table;
     private final Player[] players;
+    private final Thread[] tPlayers;
     private final LinkedList<Integer> plysCheckReq;
     /**
      * The list of card ids that are left in the dealer's deck.
@@ -47,6 +47,20 @@ public class Dealer implements Runnable {
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
         plysCheckReq = new LinkedList<Integer>();
+        this.tPlayers = new Thread[players.length];
+        initPlyrsThread();
+    }
+
+    private void initPlyrsThread() {
+        for (int i = 0; i < players.length; i++) {
+            tPlayers[i] = new Thread(players[i]);
+        }
+    }
+
+    private void startPT() {
+        for (int i = 0; i < tPlayers.length; i++) {
+            tPlayers[i].start();
+        }
     }
 
     /**
@@ -55,9 +69,11 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+        startPT();
         while (!shouldFinish()) {
             updateTimerDisplay(true);
             placeCardsOnTable();
+            
             // add notify players
             timerLoop();
             updateTimerDisplay(false);
@@ -139,7 +155,7 @@ public class Dealer implements Runnable {
         try {
             Thread.sleep(env.config.turnTimeoutMillis);
         } catch (InterruptedException e) {
-            
+
         } finally {
             checkPlyrsSets();
         }
