@@ -66,10 +66,6 @@ public class Player implements Runnable {
      * Max 3
      */
     private int usedTockens;
-    /**
-     * the places of the tockens on the board
-     */
-    private int[] tockenPlaces;
     /*
      * input queue of keys
      * max size 3
@@ -77,7 +73,6 @@ public class Player implements Runnable {
     Queue<Integer> inputQ;
 
     private final int MAX_SLOTS = 11; // MN
-    private final int NOT_PLACED = -1;// MN
     private final int Q_MAX_INP = 3;// MN
 
     /**
@@ -97,7 +92,6 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         usedTockens = 0;
-        tockenPlaces = new int[] { NOT_PLACED, NOT_PLACED, NOT_PLACED };
     }
 
     /**
