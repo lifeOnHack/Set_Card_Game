@@ -138,8 +138,10 @@ public class Dealer implements Runnable {
         // TODO implement
         try {
             Thread.sleep(env.config.turnTimeoutMillis);
-        } catch (Exception e) {
-            // TODO: handle exception
+        } catch (InterruptedException e) {
+            
+        } finally {
+            checkPlyrsSets();
         }
     }
 
@@ -191,6 +193,27 @@ public class Dealer implements Runnable {
             plysCheckReq.addLast(p);
             Thread.currentThread().interrupt();
         }
+    }
 
+    private void checkPlyrsSets() {
+        boolean con = true;
+        int curPly = -1;
+        while (con) {
+            synchronized (this.plysCheckReq) {
+                if (!this.plysCheckReq.isEmpty()) {
+                    curPly = plysCheckReq.removeFirst();
+                } else {
+                    con = false;
+                }
+                if (con) {
+                    Integer[] set = table.getPlyrTok(curPly);
+                    synchronized (set) {
+                        int[] sset = new int[] { set[0], set[1], set[2] };
+                        env.util.testSet(sset);
+                    }
+                }
+            }
+
+        }
     }
 }

@@ -55,9 +55,10 @@ public class Table {
         }
     }
 
-    public Integer[] getSTC(){
+    public Integer[] getSTC() {
         return slotToCard;
     }
+
     /**
      * Constructor for actual usage.
      *
@@ -110,7 +111,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
-        
+
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
         env.ui.placeCard(card, slot);
@@ -126,7 +127,7 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
-        }// check null
+        } // check null
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
         env.ui.removeCard(slot);
@@ -146,7 +147,7 @@ public class Table {
         Integer[] pTokens = playersSets[pId];
         for (int i = 0; i < MAX_TOKENS; i++) {
             if (NOT_PLACED == pTokens[i]) {
-                synchronized(pTokens){
+                synchronized (pTokens) {
                     pTokens[i] = slot;
                 }
                 env.ui.placeToken(pId, slot);
@@ -166,7 +167,7 @@ public class Table {
         Integer[] pTokens = playersSets[pId];
         for (int i = 0; i < MAX_TOKENS; i++) {
             if (slot == pTokens[i]) {
-                synchronized(pTokens){
+                synchronized (pTokens) {
                     pTokens[i] = NOT_PLACED;
                 }
                 env.ui.removeToken(pId, slot);
@@ -179,8 +180,8 @@ public class Table {
     /*
      * deciding if to place or remove a token
      */
-    public int setTokIfNeed(int pId, int slot) { 
-        if(removeToken(pId, slot)){
+    public int setTokIfNeed(int pId, int slot) {
+        if (removeToken(pId, slot)) {
             return -1;
         }
         placeToken(pId, slot);
@@ -191,16 +192,20 @@ public class Table {
      * clear players tokens
      */
     public void reset() {
-        for(int i = 0; i < playersSets.length; i++){
+        for (int i = 0; i < playersSets.length; i++) {
             resetPlayer(playersSets[i]);
         }
     }
 
-    public void resetPlayer(Integer[] pTokens){
-        synchronized(pTokens){
-            for(int j = 0; j < MAX_TOKENS; j++){
+    public void resetPlayer(Integer[] pTokens) {
+        synchronized (pTokens) {
+            for (int j = 0; j < MAX_TOKENS; j++) {
                 pTokens[j] = NOT_PLACED;
             }
         }
+    }
+
+    public Integer[] getPlyrTok(int pId) {
+        return playersSets[pId];
     }
 }
