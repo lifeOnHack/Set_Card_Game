@@ -116,11 +116,14 @@ public class Player implements Runnable {
                     } catch (InterruptedException ignored) {
                     }
                 while (inputQ.size() > 0) {
-                    // add/remove tocken to card
+                    // add/remove tocken from card
                     usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
                     inputQ.notifyAll();
+                    if (usedTockens == Q_MAX_INP) {
+                        this.dlr.addCheckReq(id);
+                        // need to pause
+                    }
                 }
-
             }
         }
         if (!human)
@@ -207,13 +210,13 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-        reset(); // reset
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
             playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
+        reset(); // reset
     }
 
     /**
@@ -221,7 +224,7 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-        
+
         try {
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
