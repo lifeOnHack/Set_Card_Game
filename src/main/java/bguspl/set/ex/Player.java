@@ -71,7 +71,7 @@ public class Player implements Runnable {
      * max size 3
      */
     Queue<Integer> inputQ;
-
+    StateLock myState;
     private final int MAX_SLOTS = 11; // MN
     private final int Q_MAX_INP = 3;// MN
 
@@ -92,6 +92,7 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         usedTockens = 0;
+        myState = new StateLock();
     }
 
     /**
@@ -146,6 +147,7 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 // TODO implement player key press simulator
+                // pause by state
                 synchronized (inputQ) {
                     if (inputQ.size() == MAX_SLOTS)
                         try {
@@ -194,6 +196,7 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
+        // check state
         System.out.println("check val: " + slot);// probeb num from 0 to 11
         synchronized (inputQ) {
             if (inputQ.size() < Q_MAX_INP) {
@@ -218,6 +221,7 @@ public class Player implements Runnable {
         } catch (InterruptedException ignr) {
         }
         reset(); // reset
+        // change state
     }
 
     /**
@@ -225,13 +229,12 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-
         try {
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
+        // change state
         this.inputQ.clear();
-
     }
 
     public int getScore() {
@@ -241,7 +244,6 @@ public class Player implements Runnable {
     /*
      * start from zero object values
      * clear Q
-     * 
      */
     public void reset() {
         this.inputQ.clear();

@@ -1,7 +1,6 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
-import bguspl.set.UserInterfaceImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -128,7 +127,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         } // check null
-        
+
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
         env.ui.removeCard(slot);

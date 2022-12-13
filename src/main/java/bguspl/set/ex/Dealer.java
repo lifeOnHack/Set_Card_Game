@@ -79,10 +79,10 @@ public class Dealer implements Runnable {
             updateTimerDisplay(true);
             placeCardsOnTable();
 
-            // add notify players
+            // add notify players, by stats
             timerLoop();
             updateTimerDisplay(false);
-            // add wait
+            // add wait to players, by stats
             removeAllCardsFromTable();
             shuffle();
         }
