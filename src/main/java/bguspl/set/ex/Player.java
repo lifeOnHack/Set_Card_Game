@@ -119,6 +119,8 @@ public class Player implements Runnable {
                     inputQ.notifyAll();
                     if (usedTockens == Q_MAX_INP) {
                         dlr.addCheckReq(id);
+                        // pause the player
+
                     }
                 }
             }
@@ -239,7 +241,7 @@ public class Player implements Runnable {
      * clear Q
      * 
      */
-    private void reset() {
+    public void reset() {
         this.inputQ.clear();
         usedTockens = 0;
     }

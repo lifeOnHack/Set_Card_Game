@@ -197,7 +197,7 @@ public class Table {
         }
     }
 
-    public void resetPlayer(Integer[] pTokens) {
+    private void resetPlayer(Integer[] pTokens) {
         synchronized (pTokens) {
             for (int j = 0; j < MAX_TOKENS; j++) {
                 pTokens[j] = NOT_PLACED;

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+
+
 /**
  * This class manages the dealer's threads and data
  */
@@ -233,8 +235,12 @@ public class Dealer implements Runnable {
             if (con) {
                 Integer[] set = table.getPlyrTok(curPly);
                 synchronized (set) {
-                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]]};
+                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
                     if (env.util.testSet(curset)) {
+                        table.reset();
+                        for (Player p : players) {
+                            p.reset();
+                        }
                         players[curPly].point();
                         synchronized (this.plysCheckReq) {
                             plysCheckReq.clear();
