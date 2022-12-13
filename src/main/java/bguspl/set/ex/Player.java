@@ -108,11 +108,12 @@ public class Player implements Runnable {
         while (!terminate) {
             // TODO implement main player loop
             synchronized (inputQ) {
-                while (inputQ.size() == 0)
+                while (inputQ.size() == 0) {
                     try {
                         inputQ.wait();
                     } catch (InterruptedException ignored) {
                     }
+                }
                 while (inputQ.size() > 0) {
                     // add/remove tocken from card
                     usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
@@ -120,7 +121,6 @@ public class Player implements Runnable {
                     if (usedTockens == Q_MAX_INP) {
                         dlr.addCheckReq(id);
                         // pause the player
-
                     }
                 }
             }
@@ -160,6 +160,7 @@ public class Player implements Runnable {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    break;
                 }
                 /*
                  * try {
@@ -197,6 +198,7 @@ public class Player implements Runnable {
         synchronized (inputQ) {
             if (inputQ.size() < Q_MAX_INP) {
                 inputQ.add(slot);
+                inputQ.notifyAll();
             }
         }
     }

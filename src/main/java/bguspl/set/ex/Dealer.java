@@ -98,8 +98,8 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();// may not need
-            placeCardsOnTable();// may not need
+            removeCardsFromTable();// iff needed
+            placeCardsOnTable();// iff needed
         }
     }
 
@@ -130,7 +130,7 @@ public class Dealer implements Runnable {
         if (curset != null) {
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
-                deck.add(curset[i]);
+                // deck.add(curset[i]);
             }
         }
         curset = null;
@@ -161,6 +161,7 @@ public class Dealer implements Runnable {
         } catch (InterruptedException e) {
 
         } finally {
+            updateTimerDisplay(false);
             checkPlyrsSets();
         }
     }
@@ -233,6 +234,7 @@ public class Dealer implements Runnable {
                 }
             }
             if (con) {
+                updateTimerDisplay(false);
                 Integer[] set = table.getPlyrTok(curPly);
                 synchronized (set) {
                     this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
@@ -241,13 +243,13 @@ public class Dealer implements Runnable {
                         for (Player p : players) {
                             p.reset();
                         }
-                        players[curPly].point();
+                        players[curPly].point();// may be changed
                         synchronized (this.plysCheckReq) {
                             plysCheckReq.clear();
                             con = false;
                         }
                     } else {
-                        players[curPly].penalty();
+                        players[curPly].penalty(); // may be changed
                         this.curset = null;
                     }
                 }
