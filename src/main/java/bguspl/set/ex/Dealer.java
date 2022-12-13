@@ -1,7 +1,6 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
-import bguspl.set.Util;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -24,6 +23,7 @@ public class Dealer implements Runnable {
      */
     private final Table table;
     private final Player[] players;
+    private final Thread[] tPlayers;
     private final LinkedList<Integer> plysCheckReq;
     /**
      * The list of card ids that are left in the dealer's deck.
@@ -48,6 +48,20 @@ public class Dealer implements Runnable {
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
         plysCheckReq = new LinkedList<Integer>();
+        this.tPlayers = new Thread[players.length];
+        initPlyrsThread();
+    }
+
+    private void initPlyrsThread() {
+        for (int i = 0; i < players.length; i++) {
+            tPlayers[i] = new Thread(players[i]);
+        }
+    }
+
+    private void startPT() {
+        for (int i = 0; i < tPlayers.length; i++) {
+            tPlayers[i].start();
+        }
     }
 
     /**
@@ -56,9 +70,11 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+        startPT();
         while (!shouldFinish()) {
             updateTimerDisplay(true);
             placeCardsOnTable();
+            
             // add notify players
             timerLoop();
             updateTimerDisplay(false);
@@ -139,8 +155,10 @@ public class Dealer implements Runnable {
         // TODO implement
         try {
             Thread.sleep(env.config.turnTimeoutMillis);
-        } catch (Exception e) {
-            // TODO: handle exception
+        } catch (InterruptedException e) {
+
+        } finally {
+            checkPlyrsSets();
         }
     }
 
@@ -192,7 +210,28 @@ public class Dealer implements Runnable {
             plysCheckReq.addLast(p);
             Thread.currentThread().interrupt();
         }
+    }
 
+    private void checkPlyrsSets() {
+        boolean con = true;
+        int curPly = -1;
+        while (con) {
+            synchronized (this.plysCheckReq) {
+                if (!this.plysCheckReq.isEmpty()) {
+                    curPly = plysCheckReq.removeFirst();
+                } else {
+                    con = false;
+                }
+                if (con) {
+                    Integer[] set = table.getPlyrTok(curPly);
+                    synchronized (set) {
+                        int[] sset = new int[] { set[0], set[1], set[2] };
+                        env.util.testSet(sset);
+                    }
+                }
+            }
+
+        }
     }
 
     private void shuffle(){
