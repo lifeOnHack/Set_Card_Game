@@ -154,6 +154,11 @@ public class Player implements Runnable {
                         }
                 }
                 this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 /*
                  * try {
                  * synchronized (this) {
@@ -206,7 +211,7 @@ public class Player implements Runnable {
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         try {
-            Thread.sleep(env.config.pointFreezeMillis);
+            playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
     }
@@ -216,11 +221,12 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-        reset();
+        
         try {
-            Thread.sleep(env.config.penaltyFreezeMillis);
+            playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
+        this.inputQ.clear();
 
     }
 

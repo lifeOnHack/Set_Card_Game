@@ -2,6 +2,7 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,5 +147,9 @@ public class Dealer implements Runnable {
             notify();
         }
 
+    }
+
+    private void shuffle(){
+        Collections.shuffle(deck);
     }
 }
