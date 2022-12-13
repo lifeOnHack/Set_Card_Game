@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import bguspl.set.Env;
+import bguspl.set.Util;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -38,6 +39,8 @@ public class Dealer implements Runnable {
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
     private long reshuffleTime = Long.MAX_VALUE;
+    private final long MIN_IN_MS = 60000;
+    private final long FIVE_SEC = 5000;
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -54,9 +57,12 @@ public class Dealer implements Runnable {
     public void run() {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         while (!shouldFinish()) {
+            updateTimerDisplay(true);
             placeCardsOnTable();
+            // add notify players
             timerLoop();
             updateTimerDisplay(false);
+            // add wait
             removeAllCardsFromTable();
         }
         announceWinners();
@@ -71,8 +77,8 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();
-            placeCardsOnTable();
+            removeCardsFromTable(false);// may not need
+            placeCardsOnTable();// may not need
         }
     }
 
@@ -80,7 +86,10 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated due to an external event.
      */
     public void terminate() {
-        // TODO implement
+        terminate = true;
+        for (Player p : players) {
+            p.terminate();
+        }
     }
 
     /**
@@ -96,8 +105,15 @@ public class Dealer implements Runnable {
      * Checks if any cards should be removed from the table and returns them to the
      * deck.
      */
-    private void removeCardsFromTable() {
+    private void removeCardsFromTable(Boolean all) {
         // TODO implement
+        Integer[] cardArr = table.getSTC();
+        for (int i = 0; i < cardArr.length; i++) {
+            if (all || cardArr[i] == null) {
+                env.ui.removeCard(i);
+                cardArr[i] = null;
+            }
+        }
     }
 
     /**
@@ -105,6 +121,14 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+        Integer[] cardArr = table.getSTC();
+        for (int i = 0; i < cardArr.length; i++) {
+            if (cardArr[i] == null) {
+                int cc = deck.remove(0);
+                table.placeCard(cc, i);
+                // env.ui.placeCard(cc, i);
+            }
+        }
     }
 
     /**
@@ -125,26 +149,48 @@ public class Dealer implements Runnable {
      */
     private void updateTimerDisplay(boolean reset) {
         // TODO implement
+        long t = System.currentTimeMillis();
+        if (reset) {
+            reshuffleTime = t + MIN_IN_MS;
+        }
+        env.ui.setCountdown(reshuffleTime - t, reshuffleTime - t <= FIVE_SEC);
+        // setElapsed
     }
 
     /**
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
-        // TODO implement
+        removeCardsFromTable(true);
     }
 
     /**
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
-        // TODO implement
+        int bestScore = -1;
+        int numOfWinners = 0;
+        for (Player player : players) {
+            if (player.getScore() > bestScore) {
+                bestScore = player.getScore();
+                numOfWinners = 1;
+            } else if (player.getScore() == bestScore) {
+                numOfWinners++;
+            }
+        }
+        int[] winners = new int[numOfWinners];
+        for (Player player : players) {
+            if (player.getScore() == bestScore) {
+                winners[--numOfWinners] = player.id;
+            }
+        }
+        env.ui.announceWinner(winners);
     }
 
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
             plysCheckReq.addLast(p);
-            notify();
+            Thread.currentThread().interrupt();
         }
 
     }
