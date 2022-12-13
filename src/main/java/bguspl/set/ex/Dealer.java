@@ -25,6 +25,7 @@ public class Dealer implements Runnable {
     private final Player[] players;
     private final Thread[] tPlayers;
     private final LinkedList<Integer> plysCheckReq;
+    private int[] curset;
     /**
      * The list of card ids that are left in the dealer's deck.
      */
@@ -41,6 +42,8 @@ public class Dealer implements Runnable {
     private long reshuffleTime = Long.MAX_VALUE;
     private final long MIN_IN_MS = 60000;
     private final long FIVE_SEC = 5000;
+
+    Thread myThread;
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -69,17 +72,19 @@ public class Dealer implements Runnable {
      */
     @Override
     public void run() {
+        myThread = Thread.currentThread();
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         startPT();
         while (!shouldFinish()) {
             updateTimerDisplay(true);
             placeCardsOnTable();
-            
+
             // add notify players
             timerLoop();
             updateTimerDisplay(false);
             // add wait
             removeAllCardsFromTable();
+            shuffle();
         }
         announceWinners();
         System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
@@ -93,7 +98,7 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable(false);// may not need
+            removeCardsFromTable();// may not need
             placeCardsOnTable();// may not need
         }
     }
@@ -121,15 +126,13 @@ public class Dealer implements Runnable {
      * Checks if any cards should be removed from the table and returns them to the
      * deck.
      */
-    private void removeCardsFromTable(Boolean all) {
-        // TODO implement
-        Integer[] cardArr = table.getSTC();
-        for (int i = 0; i < cardArr.length; i++) {
-            if (all || cardArr[i] == null) {
-                env.ui.removeCard(i);
-                cardArr[i] = null;
+    private void removeCardsFromTable() {
+        if (curset != null) {
+            for (int i = 0; i < curset.length; i++) {
+                table.removeByCard(curset[i]);
             }
         }
+        curset = null;
     }
 
     /**
@@ -140,9 +143,8 @@ public class Dealer implements Runnable {
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
             if (cardArr[i] == null) {
-                int cc = deck.remove(0);
+                int cc = deck.remove(0);// remove top card
                 table.placeCard(cc, i);
-                // env.ui.placeCard(cc, i);
             }
         }
     }
@@ -179,7 +181,10 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
-        removeCardsFromTable(true);
+        Integer[] cardArr = table.getSTC();
+        for (int i = 0; i < cardArr.length; i++) {
+            table.removeCard(i);
+        }
     }
 
     /**
@@ -208,25 +213,36 @@ public class Dealer implements Runnable {
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
             plysCheckReq.addLast(p);
-            Thread.currentThread().interrupt();
+            myThread.interrupt();
         }
     }
 
     private void checkPlyrsSets() {
         boolean con = true;
         int curPly = -1;
+        Integer[] stc = table.getSTC();
         while (con) {
             synchronized (this.plysCheckReq) {
                 if (!this.plysCheckReq.isEmpty()) {
                     curPly = plysCheckReq.removeFirst();
                 } else {
                     con = false;
+                    // continue;
                 }
-                if (con) {
-                    Integer[] set = table.getPlyrTok(curPly);
-                    synchronized (set) {
-                        int[] sset = new int[] { set[0], set[1], set[2] };
-                        env.util.testSet(sset);
+            }
+            if (con) {
+                Integer[] set = table.getPlyrTok(curPly);
+                synchronized (set) {
+                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]]};
+                    if (env.util.testSet(curset)) {
+                        players[curPly].point();
+                        synchronized (this.plysCheckReq) {
+                            plysCheckReq.clear();
+                            con = false;
+                        }
+                    } else {
+                        players[curPly].penalty();
+                        this.curset = null;
                     }
                 }
             }
@@ -234,7 +250,7 @@ public class Dealer implements Runnable {
         }
     }
 
-    private void shuffle(){
+    private void shuffle() {
         Collections.shuffle(deck);
     }
 }
