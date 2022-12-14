@@ -109,7 +109,6 @@ public class Player implements Runnable {
             createArtificialIntelligence();
 
         while (!terminate) {
-            // TODO implement main player loop
             myState.makeAction(this);
             // while (myState.getState() == STATES.FREE_TO_GO)
             synchronized (inputQ) {
@@ -153,7 +152,6 @@ public class Player implements Runnable {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
             Random rnd = new Random();
             while (!terminate) {
-                // TODO implement player key press simulator
                 // pause by state
                 myState.makeAction(this);
                 synchronized (inputQ) {
@@ -225,7 +223,8 @@ public class Player implements Runnable {
      */
     public void point() {
         // myState.setState(STATES.FREE_TO_GO);// change state
-        int ignored = table.countCards(); // this part is just for demonstration in the unit tests
+        // int ignored = table.countCards(); // this part is just for demonstration in
+        // the unit tests
         // synchronized(score)
         env.ui.setScore(id, ++score);
         try {
@@ -241,7 +240,6 @@ public class Player implements Runnable {
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        // TODO implement
         // myState.setState(STATES.FREE_TO_GO);// change state
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);

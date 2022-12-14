@@ -40,7 +40,7 @@ public class Dealer implements Runnable {
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
     private long reshuffleTime = Long.MAX_VALUE;
-    private final long MIN_IN_MS = 60000;
+    //private final long MIN_IN_MS = 60000;
     private final long SLEEP_TIME = 150;
 
     Thread myThread;
