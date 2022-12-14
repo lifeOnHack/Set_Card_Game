@@ -192,16 +192,20 @@ public class Table {
      */
     public void reset() {
         for (int i = 0; i < playersSets.length; i++) {
-            resetPlayer(i);
+            resetPlayer(playersSets[i]);
+        }
+    }
+
+    private void resetPlayer(Integer[] pTokens) {
+        synchronized (pTokens) {
+            for (int j = 0; j < MAX_TOKENS; j++) {
+                pTokens[j] = NOT_PLACED;
+            }
         }
     }
 
     public void resetPlayer(int pId) {
-        synchronized (playersSets[pId]) {
-            for (int j = 0; j < MAX_TOKENS; j++) {
-                removeToken(pId, playersSets[pId][j]);
-            }
-        }
+        resetPlayer(playersSets[pId]);
     }
 
     public Integer[] getPlyrTok(int pId) {
