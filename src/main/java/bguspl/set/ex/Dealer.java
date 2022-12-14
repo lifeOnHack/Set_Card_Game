@@ -77,8 +77,9 @@ public class Dealer implements Runnable {
         startPT();
         while (!shouldFinish()) {
             shuffleNReset();
-            updateTimerDisplay(true);
+
             placeCardsOnTable();
+            updateTimerDisplay(true);
             wakeAll();// add notify players, by stats
             timerLoop();
             // updateTimerDisplay(false);
@@ -172,11 +173,19 @@ public class Dealer implements Runnable {
     private void updateTimerDisplay(boolean reset) {
         // System.out.println("update time, reset=" + reset);
         long t = System.currentTimeMillis();
-        if (reset) {
-            reshuffleTime = t + MIN_IN_MS;
+        if (env.config.turnTimeoutMillis > 0) {// countdown for env.config.turnTimeoutMillis
+            if (reset) {
+                reshuffleTime = t + env.config.turnTimeoutMillis;
+            }
+            long tLeft = reshuffleTime - t;
+            env.ui.setCountdown(tLeft > 0 ? tLeft : 0, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
+            // setElapsed
+        } else if (env.config.turnTimeoutMillis == 0) {// start from zero up
+            if (reset) {
+                reshuffleTime = System.currentTimeMillis();
+            }
+            env.ui.setCountdown(t - reshuffleTime, false);
         }
-        env.ui.setCountdown(reshuffleTime - t, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
-        // setElapsed
     }
 
     /**
@@ -270,7 +279,7 @@ public class Dealer implements Runnable {
 
     private void wakeAll() {
         for (Player player : players) {
-            player.myState.wakeup();
+            player.myState.wakeup(player);
         }
     }
 
@@ -283,6 +292,6 @@ public class Dealer implements Runnable {
     private void interruptPlayer(int pId, STATES s) {
         players[pId].myState.setState(s);
         System.out.println("waking up" + " player" + pId);
-        players[pId].myState.wakeup();
+        players[pId].myState.wakeup(players[pId]);
     }
 }

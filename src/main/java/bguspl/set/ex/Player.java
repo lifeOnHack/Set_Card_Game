@@ -111,8 +111,9 @@ public class Player implements Runnable {
         while (!terminate) {
             // TODO implement main player loop
             myState.makeAction(this);
+            // while (myState.getState() == STATES.FREE_TO_GO)
             synchronized (inputQ) {
-                while (inputQ.size() == 0) {
+                while (inputQ.size() == 0 && myState.getState() == STATES.FREE_TO_GO) {
                     try {
                         inputQ.wait();
                     } catch (InterruptedException ignored) {
@@ -134,6 +135,7 @@ public class Player implements Runnable {
         if (!human)
             try {
                 aiThread.join();
+                aiThread.interrupt();
             } catch (InterruptedException ignored) {
             }
         System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
@@ -155,7 +157,7 @@ public class Player implements Runnable {
                 // pause by state
                 myState.makeAction(this);
                 synchronized (inputQ) {
-                    if (inputQ.size() == MAX_SLOTS)
+                    if (inputQ.size() == MAX_SLOTS && myState.getState() == STATES.FREE_TO_GO)
                         try {
                             inputQ.wait();
                         } catch (InterruptedException e) {
@@ -249,6 +251,7 @@ public class Player implements Runnable {
         }
         synchronized (inputQ) {
             this.inputQ.clear();
+            inputQ.notifyAll();
         }
 
     }
@@ -265,9 +268,15 @@ public class Player implements Runnable {
     public void reset() {
         synchronized (inputQ) {
             this.inputQ.clear();
+            inputQ.notifyAll();
         }
         usedTockens = 0;
         table.resetPlayer(id);
     }
 
+    public void notifyInputQ() {
+        synchronized (inputQ) {
+            inputQ.notifyAll();
+        }
+    }
 }

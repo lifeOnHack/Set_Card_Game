@@ -192,20 +192,23 @@ public class Table {
      */
     public void reset() {
         for (int i = 0; i < playersSets.length; i++) {
-            resetPlayer(playersSets[i]);
+            resetPlayer(playersSets[i], i);
         }
     }
 
-    private void resetPlayer(Integer[] pTokens) {
+    private void resetPlayer(Integer[] pTokens, int id) {
         synchronized (pTokens) {
             for (int j = 0; j < MAX_TOKENS; j++) {
+                if (pTokens[j] != null && pTokens[j] != NOT_PLACED) {
+                    env.ui.removeToken(id, pTokens[j]);
+                }
                 pTokens[j] = NOT_PLACED;
             }
         }
     }
 
     public void resetPlayer(int pId) {
-        resetPlayer(playersSets[pId]);
+        resetPlayer(playersSets[pId], pId);
     }
 
     public Integer[] getPlyrTok(int pId) {

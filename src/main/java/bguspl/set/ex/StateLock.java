@@ -85,7 +85,8 @@ public class StateLock {
         }
     }
 
-    public synchronized void wakeup() {
+    public synchronized void wakeup(Player p) {
+        p.notifyInputQ();
         notifyAll();
     }
 }
