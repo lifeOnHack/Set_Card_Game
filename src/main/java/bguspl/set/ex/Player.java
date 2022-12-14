@@ -1,5 +1,6 @@
 package bguspl.set.ex;
 
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
@@ -92,6 +93,7 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         usedTockens = 0;
+        inputQ = new LinkedList<>();
         myState = new StateLock();
     }
 
