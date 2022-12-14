@@ -312,6 +312,7 @@ public class Dealer implements Runnable {
     private void interruptPlayer(int pId, STATES s) {
         players[pId].myState.setState(s);
         System.out.println("waking up" + " player" + pId);
+        System.out.println(plysCheckReq);
         players[pId].myState.wakeup(players[pId]);
     }
 }

@@ -75,6 +75,7 @@ public class Player implements Runnable {
     public StateLock myState;
     private final int MAX_SLOTS = 11; // MN
     private final int Q_MAX_INP = 3;// MN
+    private final int SEC = 1000;// MN
 
     /**
      * The class constructor.
@@ -165,7 +166,7 @@ public class Player implements Runnable {
                 }
                 this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(SEC);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
