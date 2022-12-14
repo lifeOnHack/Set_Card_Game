@@ -202,9 +202,11 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        // TODO implement
         // check state
-        System.out.println("check val: " + slot);// probeb num from 0 to 11
+        if (myState.getState() != STATES.FREE_TO_GO) {
+            // System.out.println("cant perform press");
+            return;
+        }
         synchronized (inputQ) {
             if (inputQ.size() < Q_MAX_INP) {
                 inputQ.add(slot);
@@ -226,6 +228,7 @@ public class Player implements Runnable {
         env.ui.setScore(id, ++score);
         try {
             // Thread.sleep(env.config.pointFreezeMillis);
+            System.out.println("funn player " + id + " got point");
             playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
@@ -240,6 +243,7 @@ public class Player implements Runnable {
         // myState.setState(STATES.FREE_TO_GO);// change state
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
+            System.out.println("damn player " + id + " penalised");
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }

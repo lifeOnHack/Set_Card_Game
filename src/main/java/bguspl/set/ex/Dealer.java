@@ -41,7 +41,7 @@ public class Dealer implements Runnable {
      */
     private long reshuffleTime = Long.MAX_VALUE;
     private final long MIN_IN_MS = 60000;
-    private final long FIVE_SEC = 5000;
+    private final long SLEEP_TIME = 150;
 
     Thread myThread;
 
@@ -155,9 +155,9 @@ public class Dealer implements Runnable {
      * purpose.
      */
     private void sleepUntilWokenOrTimeout() {
-        // TODO implement
         try {
-            Thread.sleep(env.config.turnTimeoutMillis);
+            // System.out.println(env.config.players * SLEEP_TIME);
+            Thread.sleep(env.config.players * SLEEP_TIME);
         } catch (InterruptedException e) {
 
         } finally {
@@ -170,11 +170,12 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
+        // System.out.println("update time, reset=" + reset);
         long t = System.currentTimeMillis();
         if (reset) {
             reshuffleTime = t + MIN_IN_MS;
         }
-        env.ui.setCountdown(reshuffleTime - t, reshuffleTime - t <= FIVE_SEC);
+        env.ui.setCountdown(reshuffleTime - t, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
         // setElapsed
     }
 
@@ -281,6 +282,7 @@ public class Dealer implements Runnable {
 
     private void interruptPlayer(int pId, STATES s) {
         players[pId].myState.setState(s);
+        System.out.println("waking up" + " player" + pId);
         players[pId].myState.wakeup();
     }
 }
