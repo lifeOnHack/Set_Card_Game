@@ -21,7 +21,6 @@ public class StateLock {
 
     public synchronized void setState(STATES newS) {
         state = newS;
-        System.out.println("new state: " + state);
     }
 
     public void makeAction(Player p) {
@@ -30,9 +29,10 @@ public class StateLock {
             case STOP:
                 synchronized (this) {
                     try {
-                        System.out.println("player" + p.id + " wait on stop");
+                        // System.out.println("player" + p.id + " wait on stop");
                         wait();
                     } catch (InterruptedException e) {
+                        p.terminate();
                     }
                     setState(STATES.FREE_TO_GO);
                 }
@@ -40,43 +40,33 @@ public class StateLock {
             case WAIT_FOR_RES:
                 synchronized (this) {
                     try {
-                        System.out.println("player" + p.id + " wait on results");
+                        // System.out.println("player" + p.id + " wait on results");
                         wait();
                     } catch (InterruptedException e) {
-
+                        p.terminate();
                     }
                     if (state == STATES.DO_PENALTY) {
-                        // p.penalty();
                         resFunc = new Runnable() {
                             @Override
                             public void run() {
                                 p.penalty();
                             }
                         };
-                        System.out.println("player" + p.id + " get penalty");
+                        // System.out.println("player" + p.id + " get penalty");
                     } else if (state == STATES.DO_POINT) {
-                        // p.point();
                         resFunc = new Runnable() {
                             @Override
                             public void run() {
                                 p.point();
                             }
                         };
-                        System.out.println("player" + p.id + " get point");
+                        // System.out.println("player" + p.id + " get point");
                     }
                     setState(STATES.FREE_TO_GO);
                 }
                 break;
             case FREE_TO_GO:
                 break;
-            /*
-             * case DO_PENALTY:
-             * p.penalty();
-             * break;
-             * case DO_POINT:
-             * p.point();
-             * break;
-             */
             default:
                 break;
         }

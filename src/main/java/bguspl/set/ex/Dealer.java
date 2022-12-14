@@ -40,7 +40,7 @@ public class Dealer implements Runnable {
      * The time when the dealer needs to reshuffle the deck due to turn timeout.
      */
     private long reshuffleTime = Long.MAX_VALUE;
-    //private final long MIN_IN_MS = 60000;
+    private final long MIN_IN_MS = 60000;
     private final long SLEEP_TIME = 150;
 
     Thread myThread;
@@ -97,7 +97,7 @@ public class Dealer implements Runnable {
      * not time out.
      */
     private void timerLoop() {
-        while (!terminate && System.currentTimeMillis() < reshuffleTime) {
+        while (!terminate && (System.currentTimeMillis() < reshuffleTime || env.config.turnTimeoutMillis == 0)) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
             removeCardsFromTable();// iff needed
@@ -112,6 +112,7 @@ public class Dealer implements Runnable {
         terminate = true;
         for (Player p : players) {
             p.terminate();
+            tPlayers[p.id].interrupt();
         }
     }
 
@@ -132,7 +133,9 @@ public class Dealer implements Runnable {
         if (curset != null) {
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
-                // deck.add(curset[i]);
+            }
+            if (env.config.turnTimeoutMillis == 0) {
+                updateTimerDisplay(true);
             }
         }
         curset = null;
@@ -181,10 +184,27 @@ public class Dealer implements Runnable {
             env.ui.setCountdown(tLeft > 0 ? tLeft : 0, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
             // setElapsed
         } else if (env.config.turnTimeoutMillis == 0) {// start from zero up
+            if (t - reshuffleTime > MIN_IN_MS) {
+                stopAll();
+                removeAllCardsFromTable();
+                shuffleNReset();
+                placeCardsOnTable();
+                reset = true;
+                wakeAll();
+            }
             if (reset) {
                 reshuffleTime = System.currentTimeMillis();
             }
             env.ui.setCountdown(t - reshuffleTime, false);
+        } else {
+            LinkedList<Integer> local = new LinkedList<Integer>();
+            Collections.addAll(local, table.getSTC());
+            if (env.util.findSets(local, 1).size() == 0) {
+                reshuffleTime = System.currentTimeMillis() - MIN_IN_MS;
+                System.out.println("there is no set");
+            } else {
+                reshuffleTime = Long.MAX_VALUE;
+            }
         }
     }
 

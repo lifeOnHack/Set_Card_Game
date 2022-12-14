@@ -116,6 +116,7 @@ public class Player implements Runnable {
                     try {
                         inputQ.wait();
                     } catch (InterruptedException ignored) {
+                        terminate();
                     }
                 }
                 while (inputQ.size() > 0) {
@@ -125,11 +126,10 @@ public class Player implements Runnable {
                     if (usedTockens == Q_MAX_INP) {
                         dlr.addCheckReq(id);
                         myState.setState(STATES.WAIT_FOR_RES);
-                        // pause the player to wait for results
+                        // player wait for results
                     }
                 }
             }
-            // myState.makeAction(this);
         }
         if (!human)
             try {
@@ -247,10 +247,13 @@ public class Player implements Runnable {
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        synchronized (inputQ) {
-            this.inputQ.clear();
-            inputQ.notifyAll();
-        }
+        if (human) {
+            synchronized (inputQ) {
+                this.inputQ.clear();
+                inputQ.notifyAll();
+            }
+        } else
+            reset();
 
     }
 
