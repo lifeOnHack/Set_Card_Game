@@ -76,16 +76,15 @@ public class Dealer implements Runnable {
         initPlyrsThread();
         startPT();
         while (!shouldFinish()) {
-            shuffle();
+            shuffleNReset();
             updateTimerDisplay(true);
             placeCardsOnTable();
             wakeAll();// add notify players, by stats
             timerLoop();
-            updateTimerDisplay(false);
+            // updateTimerDisplay(false);
             // add wait to players, by stats
             stopAll();
             removeAllCardsFromTable();
-
         }
         terminate();
         announceWinners();
@@ -142,7 +141,6 @@ public class Dealer implements Runnable {
      * Check if any cards can be removed from the deck and placed on the table.
      */
     private void placeCardsOnTable() {
-        // TODO implement
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
             if (cardArr[i] == null) {
@@ -172,7 +170,6 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-        // TODO implement
         long t = System.currentTimeMillis();
         if (reset) {
             reshuffleTime = t + MIN_IN_MS;
@@ -262,8 +259,12 @@ public class Dealer implements Runnable {
         }
     }
 
-    private void shuffle() {
+    private void shuffleNReset() {
         Collections.shuffle(deck);
+        for (Player p : players) {
+            p.reset();
+        }
+        table.reset();
     }
 
     private void wakeAll() {

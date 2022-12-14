@@ -49,9 +49,7 @@ public class Table {
         this.cardToSlot = cardToSlot;
 
         this.playersSets = new Integer[env.config.players][3];
-        if (playersSets[0] == null) {
-            System.err.println("null playersSets");
-        }
+        reset();
     }
 
     public Integer[] getSTC() {
@@ -194,14 +192,14 @@ public class Table {
      */
     public void reset() {
         for (int i = 0; i < playersSets.length; i++) {
-            resetPlayer(playersSets[i]);
+            resetPlayer(i);
         }
     }
 
-    private void resetPlayer(Integer[] pTokens) {
-        synchronized (pTokens) {
+    public void resetPlayer(int pId) {
+        synchronized (playersSets[pId]) {
             for (int j = 0; j < MAX_TOKENS; j++) {
-                pTokens[j] = NOT_PLACED;
+                removeToken(pId, playersSets[pId][j]);
             }
         }
     }

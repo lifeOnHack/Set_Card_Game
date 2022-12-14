@@ -110,6 +110,7 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
+            myState.makeAction(this);
             synchronized (inputQ) {
                 while (inputQ.size() == 0) {
                     try {
@@ -128,7 +129,7 @@ public class Player implements Runnable {
                     }
                 }
             }
-            myState.makeAction(this);
+            // myState.makeAction(this);
         }
         if (!human)
             try {
@@ -262,6 +263,7 @@ public class Player implements Runnable {
             this.inputQ.clear();
         }
         usedTockens = 0;
+        table.resetPlayer(id);
     }
 
 }

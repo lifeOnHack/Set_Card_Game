@@ -21,6 +21,7 @@ public class StateLock {
 
     public synchronized void setState(STATES newS) {
         state = newS;
+        System.out.println("new state: " + state);
     }
 
     public void makeAction(Player p) {
