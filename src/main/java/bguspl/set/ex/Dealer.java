@@ -52,7 +52,6 @@ public class Dealer implements Runnable {
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
         plysCheckReq = new LinkedList<Integer>();
         this.tPlayers = new Thread[players.length];
-        initPlyrsThread();
     }
 
     private void initPlyrsThread() {
@@ -74,8 +73,10 @@ public class Dealer implements Runnable {
     public void run() {
         myThread = Thread.currentThread();
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+        initPlyrsThread();
         startPT();
         while (!shouldFinish()) {
+            shuffle();
             updateTimerDisplay(true);
             placeCardsOnTable();
             wakeAll();// add notify players, by stats
@@ -84,8 +85,9 @@ public class Dealer implements Runnable {
             // add wait to players, by stats
             stopAll();
             removeAllCardsFromTable();
-            shuffle();
+
         }
+        terminate();
         announceWinners();
         System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
     }
