@@ -78,11 +78,11 @@ public class Dealer implements Runnable {
         while (!shouldFinish()) {
             updateTimerDisplay(true);
             placeCardsOnTable();
-
-            // add notify players, by stats
+            wakeAll();// add notify players, by stats
             timerLoop();
             updateTimerDisplay(false);
             // add wait to players, by stats
+            stopAll();
             removeAllCardsFromTable();
             shuffle();
         }
@@ -243,13 +243,15 @@ public class Dealer implements Runnable {
                         for (Player p : players) {
                             p.reset();
                         }
-                        players[curPly].point();// may be changed
+                        // players[curPly].point();// may be changed
+                        interruptPlayer(curPly, STATES.DO_POINT);
                         synchronized (this.plysCheckReq) {
                             plysCheckReq.clear();
                             con = false;
                         }
                     } else {
-                        players[curPly].penalty(); // may be changed
+                        // players[curPly].penalty(); // may be changed
+                        interruptPlayer(curPly, STATES.DO_PENALTY);
                         this.curset = null;
                     }
                 }
@@ -260,5 +262,22 @@ public class Dealer implements Runnable {
 
     private void shuffle() {
         Collections.shuffle(deck);
+    }
+
+    private void wakeAll() {
+        for (Player player : players) {
+            player.myState.wakeup();
+        }
+    }
+
+    private void stopAll() {
+        for (Player player : players) {
+            player.myState.setState(STATES.STOP);
+        }
+    }
+
+    private void interruptPlayer(int pId, STATES s) {
+        players[pId].myState.setState(s);
+        players[pId].myState.wakeup();
     }
 }

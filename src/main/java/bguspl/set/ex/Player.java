@@ -150,7 +150,7 @@ public class Player implements Runnable {
             while (!terminate) {
                 // TODO implement player key press simulator
                 // pause by state
-
+                myState.makeAction(this);
                 synchronized (inputQ) {
                     if (inputQ.size() == MAX_SLOTS)
                         try {
@@ -179,7 +179,7 @@ public class Player implements Runnable {
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
-        aiThread.setDaemon(true);// will deteminate when the app close (potentialy SOL)
+        aiThread.setDaemon(true);// will determinate when the app close (potentialy SOL)
         aiThread.start();
     }
 
@@ -217,7 +217,7 @@ public class Player implements Runnable {
      * @post - the player's score is updated in the ui.
      */
     public void point() {
-        myState.setState(STATES.FREE_TO_GO);// change state
+        // myState.setState(STATES.FREE_TO_GO);// change state
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         // synchronized(score)
         env.ui.setScore(id, ++score);
@@ -234,13 +234,16 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-        myState.setState(STATES.FREE_TO_GO);// change state
+        // myState.setState(STATES.FREE_TO_GO);// change state
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        this.inputQ.clear();
+        synchronized (inputQ) {
+            this.inputQ.clear();
+        }
+
     }
 
     public int getScore() {
@@ -253,7 +256,9 @@ public class Player implements Runnable {
      * clear Q
      */
     public void reset() {
-        this.inputQ.clear();
+        synchronized (inputQ) {
+            this.inputQ.clear();
+        }
         usedTockens = 0;
     }
 

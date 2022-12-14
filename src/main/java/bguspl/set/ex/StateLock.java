@@ -24,6 +24,7 @@ public class StateLock {
     }
 
     public void makeAction(Player p) {
+        Runnable resFunc = null;
         switch (state) {
             case STOP:
                 synchronized (this) {
@@ -31,6 +32,7 @@ public class StateLock {
                         wait();
                     } catch (InterruptedException e) {
                     }
+                    setState(STATES.FREE_TO_GO);
                 }
                 break;
             case WAIT_FOR_RES:
@@ -39,21 +41,41 @@ public class StateLock {
                         wait();
                     } catch (InterruptedException e) {
                         if (state == STATES.DO_PENALTY) {
-                            p.penalty();
+                            // p.penalty();
+                            resFunc = new Runnable() {
+                                @Override
+                                public void run() {
+                                    p.penalty();
+                                }
+                            };
                         } else if (state == STATES.DO_POINT) {
-                            p.point();
+                            // p.point();
+                            resFunc = new Runnable() {
+                                @Override
+                                public void run() {
+                                    p.point();
+                                }
+                            };
                         }
+                        setState(STATES.FREE_TO_GO);
                     }
                 }
                 break;
             case FREE_TO_GO:
                 break;
-            case DO_PENALTY:
-                p.penalty();
+            /*
+             * case DO_PENALTY:
+             * p.penalty();
+             * break;
+             * case DO_POINT:
+             * p.point();
+             * break;
+             */
+            default:
                 break;
-            case DO_POINT:
-                p.point();
-                break;
+        }
+        if (resFunc != null) {
+            resFunc.run();
         }
 
     }
