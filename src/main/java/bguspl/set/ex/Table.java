@@ -143,7 +143,7 @@ public class Table {
      * @param player - the player the token belongs to.
      * @param slot   - the slot on which to place the token.
      */
-    public void placeToken(int pId, int slot) {
+    public int/* void */ placeToken(int pId, int slot) {
         Integer[] pTokens = playersSets[pId];
         for (int i = 0; i < MAX_TOKENS; i++) {
             if (NOT_PLACED == pTokens[i]) {
@@ -151,9 +151,10 @@ public class Table {
                     pTokens[i] = slot;
                 }
                 env.ui.placeToken(pId, slot);
-                break;
+                return 1;
             }
         }
+        return 0;
     }
 
     /**
@@ -184,8 +185,8 @@ public class Table {
         if (removeToken(pId, slot)) {
             return -1;
         }
-        placeToken(pId, slot);
-        return 0;
+        return placeToken(pId, slot);
+        // return 0;
     }
 
     /*

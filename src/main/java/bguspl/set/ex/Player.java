@@ -71,7 +71,7 @@ public class Player implements Runnable {
      * max size 3
      */
     Queue<Integer> inputQ;
-    StateLock myState;
+    public StateLock myState;
     private final int MAX_SLOTS = 11; // MN
     private final int Q_MAX_INP = 3;// MN
 
@@ -121,10 +121,12 @@ public class Player implements Runnable {
                     inputQ.notifyAll();
                     if (usedTockens == Q_MAX_INP) {
                         dlr.addCheckReq(id);
-                        // pause the player
+                        myState.setState(STATES.WAIT_FOR_RES);
+                        // pause the player to wait for results
                     }
                 }
             }
+            myState.makeAction(this);
         }
         if (!human)
             try {
@@ -148,6 +150,7 @@ public class Player implements Runnable {
             while (!terminate) {
                 // TODO implement player key press simulator
                 // pause by state
+
                 synchronized (inputQ) {
                     if (inputQ.size() == MAX_SLOTS)
                         try {
@@ -164,6 +167,7 @@ public class Player implements Runnable {
                     e.printStackTrace();
                     break;
                 }
+
                 /*
                  * try {
                  * synchronized (this) {
@@ -213,15 +217,16 @@ public class Player implements Runnable {
      * @post - the player's score is updated in the ui.
      */
     public void point() {
-        // TODO implement
+        myState.setState(STATES.FREE_TO_GO);// change state
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
+        // synchronized(score)
         env.ui.setScore(id, ++score);
         try {
+            // Thread.sleep(env.config.pointFreezeMillis);
             playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
         reset(); // reset
-        // change state
     }
 
     /**
@@ -229,15 +234,17 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
+        myState.setState(STATES.FREE_TO_GO);// change state
         try {
+            // Thread.sleep(env.config.penaltyFreezeMillis);
             playerThread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        // change state
         this.inputQ.clear();
     }
 
     public int getScore() {
+        // synchronized(score)
         return score;
     }
 
