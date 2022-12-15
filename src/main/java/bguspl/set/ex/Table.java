@@ -129,6 +129,11 @@ public class Table {
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
         env.ui.removeCard(slot);
+        for (int i = 0; i < playersSets.length; i++) {
+            for (int j = 0; j < playersSets[i].length; j++) {
+
+            }
+        }
     }
 
     public void removeByCard(int card) {
@@ -213,5 +218,19 @@ public class Table {
 
     public Integer[] getPlyrTok(int pId) {
         return playersSets[pId];
+    }
+
+    public void removeAtPoint(int s1, int s2, int s3) {
+        for (int i = 0; i < playersSets.length; i++) {
+            for (int j = 0; j < playersSets[i].length; j++) {
+                if (playersSets[i][j] == s1) {
+                    removeToken(i, s1);
+                } else if (playersSets[i][j] == s2) {
+                    removeToken(i, s2);
+                } else if (playersSets[i][j] == s3) {
+                    removeToken(i, s3);
+                }
+            }
+        }
     }
 }

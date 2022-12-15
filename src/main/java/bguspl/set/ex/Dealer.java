@@ -131,11 +131,12 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         if (curset != null) {
+            table.removeAtPoint(curset[0], curset[1], curset[2]);
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
             }
-            if (env.config.turnTimeoutMillis == 0) {
-                updateTimerDisplay(true);
+            if (env.config.turnTimeoutMillis >= 0) {
+                updateTimerDisplay(true);// means someone make point
             }
         }
         curset = null;
@@ -176,14 +177,14 @@ public class Dealer implements Runnable {
     private void updateTimerDisplay(boolean reset) {
         // System.out.println("update time, reset=" + reset);
         long t = System.currentTimeMillis();
-        if (env.config.turnTimeoutMillis > 0) {// countdown for env.config.turnTimeoutMillis
+        if (env.config.turnTimeoutMillis > 0) {// countdown for env.config.turnTimeoutMillis >0
             if (reset) {
                 reshuffleTime = t + env.config.turnTimeoutMillis;
             }
             long tLeft = reshuffleTime - t;
             env.ui.setCountdown(tLeft > 0 ? tLeft : 0, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
             // setElapsed
-        } else if (env.config.turnTimeoutMillis == 0) {// start from zero up
+        } else if (env.config.turnTimeoutMillis == 0) {// start from zero up =0
             if (t - reshuffleTime > MIN_IN_MS) {
                 stopAll();
                 removeAllCardsFromTable();
@@ -196,7 +197,7 @@ public class Dealer implements Runnable {
                 reshuffleTime = System.currentTimeMillis();
             }
             env.ui.setCountdown(t - reshuffleTime, false);
-        } else {
+        } else {// <0
             LinkedList<Integer> local = new LinkedList<Integer>();
             Collections.addAll(local, table.getSTC());
             if (env.util.findSets(local, 1).size() == 0) {
@@ -253,13 +254,13 @@ public class Dealer implements Runnable {
         boolean con = true;
         int curPly = -1;
         Integer[] stc = table.getSTC();
-        while (con) {
+        while (con & (System.currentTimeMillis() < reshuffleTime || env.config.turnTimeoutMillis == 0)) {
+            // continue iff there is still check req and the time didnt run out
             synchronized (this.plysCheckReq) {
                 if (!this.plysCheckReq.isEmpty()) {
                     curPly = plysCheckReq.removeFirst();
                 } else {
-                    con = false;
-                    // continue;
+                    con = false; // continue;
                 }
             }
             if (con) {
@@ -268,24 +269,24 @@ public class Dealer implements Runnable {
                 synchronized (set) {
                     this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
                     if (env.util.testSet(curset)) {
-                        table.reset();
-                        for (Player p : players) {
-                            p.reset();
-                        }
-                        // players[curPly].point();// may be changed
+                        /*
+                         * table.reset();
+                         * for (Player p : players) {
+                         * p.reset();
+                         * }
+                         */
                         interruptPlayer(curPly, STATES.DO_POINT);
                         synchronized (this.plysCheckReq) {
                             plysCheckReq.clear();
                             con = false;
+                            wakeAll();// maybe fix the stack problem
                         }
                     } else {
-                        // players[curPly].penalty(); // may be changed
                         interruptPlayer(curPly, STATES.DO_PENALTY);
                         this.curset = null;
                     }
                 }
             }
-
         }
     }
 
@@ -311,7 +312,7 @@ public class Dealer implements Runnable {
 
     private void interruptPlayer(int pId, STATES s) {
         players[pId].myState.setState(s);
-        System.out.println("waking up" + " player" + pId);
+        System.out.println("waking up player" + pId);
         System.out.println(plysCheckReq);
         players[pId].myState.wakeup(players[pId]);
     }

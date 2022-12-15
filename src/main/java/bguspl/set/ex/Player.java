@@ -183,7 +183,8 @@ public class Player implements Runnable {
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
-        aiThread.setDaemon(true);// will determinate when the app close (potentialy SOL)
+        // aiThread.setDaemon(true);// will determinate when the app close (potentialy
+        // SOL)
         aiThread.start();
     }
 
@@ -205,7 +206,7 @@ public class Player implements Runnable {
     public void keyPressed(int slot) {
         // check state
         if (myState.getState() != STATES.FREE_TO_GO) {
-            // System.out.println("cant perform press");
+            System.out.println("cant perform press " + myState.getState());
             return;
         }
         synchronized (inputQ) {
@@ -223,29 +224,39 @@ public class Player implements Runnable {
      * @post - the player's score is updated in the ui.
      */
     public void point() {
-        // myState.setState(STATES.FREE_TO_GO);// change state
-        // int ignored = table.countCards(); // this part is just for demonstration in
-        // the unit tests
-        // synchronized(score)
+        // int ignored = table.countCards();
+        // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
+        reset(); // reset
+        System.out.println("fuunnn player " + id + " got point");
         try {
             // Thread.sleep(env.config.pointFreezeMillis);
-            System.out.println("funn player " + id + " got point");
+
+            Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
+            while (System.currentTimeMillis() < endFrz) {
+                env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
+                playerThread.sleep(SEC / 2);
+            }
+            env.ui.setFreeze(id, env.config.pointFreezeMillis);
             playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        reset(); // reset
+        myState.setState(STATES.FREE_TO_GO);// change state
+        env.ui.setFreeze(id, 0);
     }
 
     /**
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        // myState.setState(STATES.FREE_TO_GO);// change state
+        System.out.println("damn player " + id + " penalised");
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
-            System.out.println("damn player " + id + " penalised");
-            playerThread.sleep(env.config.penaltyFreezeMillis);
+            Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
+            while (System.currentTimeMillis() < endFrz) {
+                env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
+                playerThread.sleep(SEC / 2);
+            }
         } catch (InterruptedException ignr) {
         }
         if (human) {
@@ -255,6 +266,8 @@ public class Player implements Runnable {
             }
         } else
             reset();
+        myState.setState(STATES.FREE_TO_GO);// change state
+        env.ui.setFreeze(id, 0);
 
     }
 
