@@ -104,8 +104,9 @@ public class Player implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         if (!human)
             createArtificialIntelligence();
-
+        int curSize = 0;
         while (!terminate) {
+
             try {
                 myState.nextMove();
             } catch (InterruptedException e) {
@@ -120,14 +121,20 @@ public class Player implements Runnable {
                         terminate();
                     }
                 }
-                while (inputQ.size() > 0) {
-                    // add/remove tocken from card
-                    boolean rmvFirst = usedTockens == Q_MAX_INP;
+                curSize = inputQ.size();
+            }
+            while (curSize > 0) {
+                // add/remove tocken from card
+                boolean rmvFirst = usedTockens == Q_MAX_INP;
+                synchronized (inputQ) {
                     usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
                     inputQ.notifyAll();
-                    if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
-                        dlr.addCheckReq(id);
-                    }
+                }
+                if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
+                    dlr.addCheckReq(id);
+                }
+                synchronized (inputQ) {
+                    curSize = inputQ.size();
                 }
             }
         }
@@ -152,28 +159,31 @@ public class Player implements Runnable {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
             Random rnd = new Random();
             while (!terminate) {
-                synchronized (inputQ) {
-                    System.out.println("player" + id + " " + myState.getState() + " -- " + inputQ.size());
-                    if (inputQ.size() == Q_MAX_INP /* && myState.getState() == STATES.FREE_TO_GO */)
-                        try {
-                            inputQ.wait();
-                        } catch (InterruptedException e) {
-                            // e.printStackTrace();
-                            break;
-                        }
-                }
-                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
-                try {
-                    Thread.sleep(SEC / 2);
-                } catch (InterruptedException e) {
-                    // e.printStackTrace();
-                    break;
+                if (myState.getState() == STATES.FREE_TO_GO) {
+                    synchronized (inputQ) {
+                        // System.out.println("player" + id + " " + myState.getState() + " -- " +
+                        // inputQ.size());
+                        while (inputQ.size() == Q_MAX_INP /* && myState.getState() == STATES.FREE_TO_GO */)
+                            try {
+                                inputQ.wait();
+                            } catch (InterruptedException e) {
+                                // e.printStackTrace();
+                                break;
+                            }
+                    }
+                    this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+                    try {
+                        Thread.sleep(SEC / 2);
+                    } catch (InterruptedException e) {
+                        // e.printStackTrace();
+                        break;
+                    }
                 }
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
         // aiThread.setDaemon(true);
-        // will deteminate when the app close (potentialySOL)
+        // will determinate when the app close (potentialySOL)
         aiThread.start();
     }
 
@@ -210,7 +220,7 @@ public class Player implements Runnable {
     public void point() {
 
         env.ui.setScore(id, ++score);
-        System.out.println("fuunnn player " + id + " got point");
+        // System.out.println("fuunnn player " + id + " got point");
         try {
             // Thread.sleep(env.config.pointFreezeMillis);
             Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
@@ -218,11 +228,10 @@ public class Player implements Runnable {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
                 playerThread.sleep(SEC / 2);
             }
-            System.out.println("sleep point");
             myState.setState(STATES.FREE_TO_GO);
         } catch (InterruptedException ignr) {
         }
-        reset(); // reset
+        // reset(); // reset
         env.ui.setFreeze(id, 0);
     }
 
@@ -230,18 +239,18 @@ public class Player implements Runnable {
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        System.out.println("damn player " + id + " penalised");
+        // System.out.println("damn player " + id + " penalised");
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
             myState.setState(STATES.FREE_TO_GO);
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
-                System.out.println("sleep penalty");
                 playerThread.sleep(SEC / 2);
             }
         } catch (InterruptedException ignr) {
         }
+
         if (human) {
             synchronized (inputQ) {
                 this.inputQ.clear();
@@ -249,6 +258,7 @@ public class Player implements Runnable {
             }
         } else
             reset();
+
         env.ui.setFreeze(id, 0);
     }
 
@@ -260,9 +270,11 @@ public class Player implements Runnable {
         synchronized (inputQ) {
             this.inputQ.clear();
             inputQ.notifyAll();
+            System.out.println("notify input");
         }
         usedTockens = 0;
         myState.delRun();
+        myState.setState(STATES.FREE_TO_GO);
         table.resetPlayer(id);
     }
 

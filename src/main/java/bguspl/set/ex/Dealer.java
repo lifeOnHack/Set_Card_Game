@@ -265,7 +265,13 @@ public class Dealer implements Runnable {
             updateTimerDisplay(false);
             Integer[] set = table.getPlyrTok(curPly);
             synchronized (set) {
-                this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                try {
+                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    players[curPly].reset();
+                    System.out.println(e);
+                    return;
+                }
                 if (env.util.testSet(curset)) {
                     // interruptPlayer(curPly, STATES.DO_POINT);
                     synchronized (players[curPly].myState) {
@@ -290,5 +296,8 @@ public class Dealer implements Runnable {
             p.reset();
         }
         table.reset();
+        synchronized (plysCheckReq) {
+            plysCheckReq.clear();
+        }
     }
 }

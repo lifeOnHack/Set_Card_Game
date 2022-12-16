@@ -201,6 +201,7 @@ public class Table {
                 pTokens[j] = NOT_PLACED;
             }
         }
+        System.out.println("player" + id + " reset");
     }
 
     public void resetPlayer(int pId) {
@@ -237,9 +238,10 @@ public class Table {
     private void rmvReq(Player p, LinkedList<Integer> requests) {
         synchronized (requests) {
             if (requests.contains(p.id)) {
+                System.out.println("remove at point p" + p.id);
                 requests.remove(p.id);
-                // p.myStatte.setState(FREE_TO_GO)
-                // p.myState.wakeup(p);
+                p.myState.setState(STATES.FREE_TO_GO);
+                p.myState.wakeup();
             }
         }
     }

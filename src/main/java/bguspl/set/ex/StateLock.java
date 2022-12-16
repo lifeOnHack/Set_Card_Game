@@ -29,7 +29,6 @@ public class StateLock {
     }
 
     public synchronized void nextMove() throws InterruptedException {
-        System.out.println(state);
         boolean runReady;
         synchronized (runLock) {
             runReady = resFunc != null;
@@ -46,7 +45,6 @@ public class StateLock {
         synchronized (runLock) {
             if (resFunc != null) {
                 resFunc.run();
-                System.out.println("made act: player" + p.id);
                 resFunc = null;
             }
         }
@@ -63,6 +61,7 @@ public class StateLock {
                 @Override
                 public void run() {
                     p.point();
+                    p.reset();
                 }
             };
         }
