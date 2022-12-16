@@ -68,7 +68,7 @@ public class Player implements Runnable {
      * max size 3
      */
     Queue<Integer> inputQ;
-
+    public StateLock myState;
     private final int MAX_SLOTS = 11; // MN
     private final int Q_MAX_INP = 3;// MN
     private final int SEC = 1000;// MN
