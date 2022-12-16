@@ -91,6 +91,7 @@ public class Player implements Runnable {
         this.human = human;
         usedTockens = 0;
         inputQ = new LinkedList<>();
+        myState = new StateLock(this);
     }
 
     /**
@@ -105,7 +106,12 @@ public class Player implements Runnable {
             createArtificialIntelligence();
 
         while (!terminate) {
-            // TODO implement main player loop
+            try {
+                myState.nextMove();
+            } catch (InterruptedException e) {
+                // e.printStackTrace();
+                break;
+            }
             synchronized (inputQ) {
                 while (inputQ.size() == 0 /* && myState.getState() == STATES.FREE_TO_GO */) {
                     try {
@@ -116,9 +122,10 @@ public class Player implements Runnable {
                 }
                 while (inputQ.size() > 0) {
                     // add/remove tocken from card
+                    boolean rmvFirst = usedTockens == Q_MAX_INP;
                     usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
                     inputQ.notifyAll();
-                    if (usedTockens == Q_MAX_INP) {
+                    if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
                         dlr.addCheckReq(id);
                     }
                 }
@@ -146,12 +153,12 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 synchronized (inputQ) {
-                    System.out.println("player" + id + " " /* + myState.getState() */ + " -- " + inputQ.size());
-                    if (inputQ.size() == MAX_SLOTS /* && myState.getState() == STATES.FREE_TO_GO */)
+                    System.out.println("player" + id + " " + myState.getState() + " -- " + inputQ.size());
+                    if (inputQ.size() == Q_MAX_INP /* && myState.getState() == STATES.FREE_TO_GO */)
                         try {
                             inputQ.wait();
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            // e.printStackTrace();
                             break;
                         }
                 }
@@ -159,7 +166,7 @@ public class Player implements Runnable {
                 try {
                     Thread.sleep(SEC / 2);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
                     break;
                 }
             }
@@ -201,16 +208,18 @@ public class Player implements Runnable {
      * @post - the player's score is updated in the ui.
      */
     public void point() {
+
         env.ui.setScore(id, ++score);
         System.out.println("fuunnn player " + id + " got point");
         try {
             // Thread.sleep(env.config.pointFreezeMillis);
-
             Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
                 playerThread.sleep(SEC / 2);
             }
+            System.out.println("sleep point");
+            myState.setState(STATES.FREE_TO_GO);
         } catch (InterruptedException ignr) {
         }
         reset(); // reset
@@ -224,9 +233,11 @@ public class Player implements Runnable {
         System.out.println("damn player " + id + " penalised");
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
+            myState.setState(STATES.FREE_TO_GO);
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
+                System.out.println("sleep penalty");
                 playerThread.sleep(SEC / 2);
             }
         } catch (InterruptedException ignr) {
@@ -251,6 +262,7 @@ public class Player implements Runnable {
             inputQ.notifyAll();
         }
         usedTockens = 0;
+        myState.delRun();
         table.resetPlayer(id);
     }
 

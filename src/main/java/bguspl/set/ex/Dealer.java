@@ -249,6 +249,7 @@ public class Dealer implements Runnable {
             plysCheckReq.addLast(p);
             myThread.interrupt();
         }
+        players[p].myState.setState(STATES.WAIT_FOR_RES);// freez player till results
         System.out.println("player" + p + " request check");
     }
 
@@ -267,11 +268,17 @@ public class Dealer implements Runnable {
                 this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
                 if (env.util.testSet(curset)) {
                     // interruptPlayer(curPly, STATES.DO_POINT);
-                    players[curPly].point();
+                    synchronized (players[curPly].myState) {
+                        players[curPly].myState.assignPoint();
+                        players[curPly].myState.wakeup();
+                    }
                 } else {
                     // interruptPlayer(curPly, STATES.DO_PENALTY);
+                    synchronized (players[curPly].myState) {
+                        players[curPly].myState.assignPenalty();
+                        players[curPly].myState.wakeup();
+                    }
                     this.curset = null;
-                    players[curPly].penalty();
                 }
             }
         }

@@ -10,9 +10,13 @@ enum STATES {
 
 public class StateLock {
     private STATES state;
+    private Player p;
+    private Runnable resFunc = null;
+    private Object runLock = new Object();
 
-    StateLock() {
-        state = STATES.STOP;
+    StateLock(Player player) {
+        state = STATES.FREE_TO_GO; // STATES.STOP;
+        p = player;
     }
 
     public synchronized STATES getState() {
@@ -21,77 +25,67 @@ public class StateLock {
 
     public synchronized void setState(STATES newS) {
         state = newS;
+        notifyAll();
     }
 
-    public void makeAction(Player p) {
-        Runnable resFunc = null;
-        switch (state) {
-            case STOP:
-                synchronized (this) {
-                    try {
-                        // System.out.println("player" + p.id + " wait on stop");
-                        wait();
-                    } catch (InterruptedException e) {
-                        p.terminate();
-                    }
-                    setState(STATES.FREE_TO_GO);
-                }
-                break;
-            case WAIT_FOR_RES:
-                synchronized (this) {
-                    try {
-                        // System.out.println("player" + p.id + " wait on results");
-                        wait();
-                    } catch (InterruptedException e) {
-                        p.terminate();
-                    }
-                    if (state == STATES.DO_PENALTY) {
-                        resFunc = new Runnable() {
-                            @Override
-                            public void run() {
-                                p.penalty();
-                            }
-                        };
-                        // System.out.println("player" + p.id + " get penalty");
-                    } else if (state == STATES.DO_POINT) {
-                        resFunc = new Runnable() {
-                            @Override
-                            public void run() {
-                                p.point();
-                            }
-                        };
-                        // System.out.println("player" + p.id + " get point");
-                    }
-                    setState(STATES.FREE_TO_GO);
-                }
-                break;
-            case FREE_TO_GO:
-                break;
-            case DO_PENALTY:
-                resFunc = new Runnable() {
-                    @Override
-                    public void run() {
-                        p.penalty();
-                    }
-                };
-                break;
-            case DO_POINT:
-                resFunc = new Runnable() {
-                    @Override
-                    public void run() {
-                        p.point();
-                    }
-                };
-                break;
-            default:
-                break;
+    public synchronized void nextMove() throws InterruptedException {
+        System.out.println(state);
+        boolean runReady;
+        synchronized (runLock) {
+            runReady = resFunc != null;
         }
-        if (resFunc != null) {
-            resFunc.run();
+        if (!runReady)
+            if (state == STATES.STOP | state == STATES.WAIT_FOR_RES) {
+                wait();
+            }
+        makeAction();
+    }
+
+    public synchronized void makeAction() {
+
+        synchronized (runLock) {
+            if (resFunc != null) {
+                resFunc.run();
+                System.out.println("made act: player" + p.id);
+                resFunc = null;
+            }
+        }
+        /*
+         * synchronized (this) {
+         * state = STATES.FREE_TO_GO;
+         * }
+         */
+    }
+
+    public void assignPoint() {
+        synchronized (runLock) {
+            resFunc = new Runnable() {
+                @Override
+                public void run() {
+                    p.point();
+                }
+            };
         }
     }
 
-    public synchronized void wakeup(Player p) {
+    public void assignPenalty() {
+        synchronized (runLock) {
+            resFunc = new Runnable() {
+                @Override
+                public void run() {
+                    p.penalty();
+                }
+            };
+        }
+    }
+
+    public void delRun() {
+        synchronized (runLock) {
+            resFunc = null;
+        }
+    }
+
+    public synchronized void wakeup() {
         p.notifyInputQ();
         notifyAll();
     }
