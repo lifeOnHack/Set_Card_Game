@@ -131,7 +131,7 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         if (curset != null) {
-            table.removeAtPoint(curset[0], curset[1], curset[2]);
+            table.removeAtPoint(curset[0], curset[1], curset[2], players);
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
             }

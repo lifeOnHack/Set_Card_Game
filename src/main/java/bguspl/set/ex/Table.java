@@ -220,15 +220,21 @@ public class Table {
         return playersSets[pId];
     }
 
-    public void removeAtPoint(int s1, int s2, int s3) {
+    public void removeAtPoint(int s1, int s2, int s3, Player[] players) {
         for (int i = 0; i < playersSets.length; i++) {
             for (int j = 0; j < playersSets[i].length; j++) {
                 if (playersSets[i][j] == cardToSlot[s1]) {
-                    removeToken(i, cardToSlot[s1]);
+                    if(removeToken(i, cardToSlot[s1])){
+                        players[i].tokenGotRemoved();
+                    }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    removeToken(i, cardToSlot[s2]);
+                    if(removeToken(i, cardToSlot[s2])){
+                        players[i].tokenGotRemoved();
+                    }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    removeToken(i, cardToSlot[s3]);
+                    if(removeToken(i, cardToSlot[s3])){
+                        players[i].tokenGotRemoved();
+                    }
                 }
             }
         }
