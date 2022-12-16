@@ -140,7 +140,6 @@ public class Dealer implements Runnable {
             }
         }
         curset = null;
-        //wakeAll();
     }
 
     /**
@@ -219,7 +218,7 @@ public class Dealer implements Runnable {
             deck.add(cardArr[i]);
             table.removeCard(i);
         }
-        //wakeAll();
+        // wakeAll();
     }
 
     /**
@@ -247,47 +246,31 @@ public class Dealer implements Runnable {
 
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
-            System.out.println("player"+p+" request check");
             plysCheckReq.addLast(p);
             myThread.interrupt();
+            players[p].myState.setState(STATES.WAIT_FOR_RES);
         }
+        System.out.println("player" + p + " request check");
     }
 
     private void checkPlyrsSets() {
-        boolean con = true;
         int curPly = -1;
         Integer[] stc = table.getSTC();
-        while (con & (System.currentTimeMillis() < reshuffleTime || env.config.turnTimeoutMillis == 0)) {
-            // continue iff there is still check req and the time didnt run out
-            synchronized (this.plysCheckReq) {
-                if (!this.plysCheckReq.isEmpty()) {
-                    curPly = plysCheckReq.removeFirst();
-                } else {
-                    con = false; // continue;
-                }
+        synchronized (this.plysCheckReq) {
+            if (!this.plysCheckReq.isEmpty()) {
+                curPly = plysCheckReq.removeFirst();
             }
-            if (con) {
-                updateTimerDisplay(false);
-                Integer[] set = table.getPlyrTok(curPly);
-                synchronized (set) {
-                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
-                    if (env.util.testSet(curset)) {
-                        /*
-                         * table.reset();
-                         * for (Player p : players) {
-                         * p.reset();
-                         * }
-                         */
-                        interruptPlayer(curPly, STATES.DO_POINT);
-                        synchronized (this.plysCheckReq) {
-                            plysCheckReq.clear();
-                            con = false;
-                            wakeAll();// maybe fix the stack problem
-                        }
-                    } else {
-                        interruptPlayer(curPly, STATES.DO_PENALTY);
-                        this.curset = null;
-                    }
+        }
+        if (curPly != -1) {
+            updateTimerDisplay(false);
+            Integer[] set = table.getPlyrTok(curPly);
+            synchronized (set) {
+                this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                if (env.util.testSet(curset)) {
+                    interruptPlayer(curPly, STATES.DO_POINT);
+                } else {
+                    interruptPlayer(curPly, STATES.DO_PENALTY);
+                    this.curset = null;
                 }
             }
         }

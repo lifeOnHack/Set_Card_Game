@@ -126,7 +126,7 @@ public class Player implements Runnable {
                     inputQ.notifyAll();
                     if (usedTockens == Q_MAX_INP) {
                         dlr.addCheckReq(id);
-                        myState.setState(STATES.WAIT_FOR_RES);
+                        // myState.setState(STATES.WAIT_FOR_RES);
                         // player wait for results
                     }
                 }
@@ -230,6 +230,7 @@ public class Player implements Runnable {
         // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
         reset(); // reset
+        myState.setState(STATES.FREE_TO_GO);// change state
         System.out.println("fuunnn player " + id + " got point");
         try {
             // Thread.sleep(env.config.pointFreezeMillis);
@@ -239,11 +240,9 @@ public class Player implements Runnable {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
                 playerThread.sleep(SEC / 2);
             }
-            env.ui.setFreeze(id, env.config.pointFreezeMillis);
-            playerThread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignr) {
         }
-        myState.setState(STATES.FREE_TO_GO);// change state
+
         env.ui.setFreeze(id, 0);
     }
 
@@ -252,6 +251,7 @@ public class Player implements Runnable {
      */
     public void penalty() {
         System.out.println("damn player " + id + " penalised");
+        myState.setState(STATES.FREE_TO_GO);// change state
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
@@ -268,7 +268,6 @@ public class Player implements Runnable {
             }
         } else
             reset();
-        myState.setState(STATES.FREE_TO_GO);// change state
         env.ui.setFreeze(id, 0);
 
     }
@@ -297,7 +296,7 @@ public class Player implements Runnable {
         }
     }
 
-    public void tokenGotRemoved(){
+    public void tokenGotRemoved() {
         usedTockens--;
     }
 }

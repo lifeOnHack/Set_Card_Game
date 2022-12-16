@@ -67,6 +67,22 @@ public class StateLock {
                 break;
             case FREE_TO_GO:
                 break;
+            case DO_PENALTY:
+                resFunc = new Runnable() {
+                    @Override
+                    public void run() {
+                        p.penalty();
+                    }
+                };
+                break;
+            case DO_POINT:
+                resFunc = new Runnable() {
+                    @Override
+                    public void run() {
+                        p.point();
+                    }
+                };
+                break;
             default:
                 break;
         }
