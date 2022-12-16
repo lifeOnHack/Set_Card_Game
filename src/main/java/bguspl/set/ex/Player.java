@@ -107,7 +107,7 @@ public class Player implements Runnable {
         while (!terminate) {
             // TODO implement main player loop
             synchronized (inputQ) {
-                while (inputQ.size() == 0 /*&& myState.getState() == STATES.FREE_TO_GO*/) {
+                while (inputQ.size() == 0 /* && myState.getState() == STATES.FREE_TO_GO */) {
                     try {
                         inputQ.wait();
                     } catch (InterruptedException ignored) {
@@ -122,6 +122,7 @@ public class Player implements Runnable {
                         dlr.addCheckReq(id);
                     }
                 }
+            }
         }
         if (!human)
             try {

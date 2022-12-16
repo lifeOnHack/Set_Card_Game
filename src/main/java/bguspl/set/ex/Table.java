@@ -238,7 +238,8 @@ public class Table {
         synchronized (requests) {
             if (requests.contains(p.id)) {
                 requests.remove(p.id);
-                //p.myState.wakeup(p);
+                // p.myStatte.setState(FREE_TO_GO)
+                // p.myState.wakeup(p);
             }
         }
     }
