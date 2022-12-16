@@ -76,7 +76,7 @@ public class Dealer implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         initPlyrsThread();
         boolean s = true;
-
+        shuffleNReset();
         while (!shouldFinish()) {
             placeCardsOnTable();
             updateTimerDisplay(true);
