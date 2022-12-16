@@ -1,5 +1,9 @@
 package bguspl.set.ex;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+
 import bguspl.set.Env;
 
 /**
@@ -19,7 +23,10 @@ public class Player implements Runnable {
      * Game entities.
      */
     private final Table table;
-
+    /*
+     * Dealer of the game
+     */
+    private final Dealer dlr;
     /**
      * The id of the player (starting from 0).
      */
@@ -52,6 +59,21 @@ public class Player implements Runnable {
     private int score;
 
     /**
+     * the number of tockens the player put
+     * Max 3
+     */
+    private int usedTockens;
+    /*
+     * input queue of keys
+     * max size 3
+     */
+    Queue<Integer> inputQ;
+
+    private final int MAX_SLOTS = 11; // MN
+    private final int Q_MAX_INP = 3;// MN
+    private final int SEC = 1000;// MN
+
+    /**
      * The class constructor.
      *
      * @param env    - the environment object.
@@ -62,10 +84,13 @@ public class Player implements Runnable {
      *               manually, via the keyboard).
      */
     public Player(Env env, Dealer dealer, Table table, int id, boolean human) {
+        this.dlr = dealer;
         this.env = env;
         this.table = table;
         this.id = id;
         this.human = human;
+        usedTockens = 0;
+        inputQ = new LinkedList<>();
     }
 
     /**
@@ -81,10 +106,27 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
+            synchronized (inputQ) {
+                while (inputQ.size() == 0 /*&& myState.getState() == STATES.FREE_TO_GO*/) {
+                    try {
+                        inputQ.wait();
+                    } catch (InterruptedException ignored) {
+                        terminate();
+                    }
+                }
+                while (inputQ.size() > 0) {
+                    // add/remove tocken from card
+                    usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
+                    inputQ.notifyAll();
+                    if (usedTockens == Q_MAX_INP) {
+                        dlr.addCheckReq(id);
+                    }
+                }
         }
         if (!human)
             try {
                 aiThread.join();
+                aiThread.interrupt();
             } catch (InterruptedException ignored) {
             }
         System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
@@ -100,18 +142,30 @@ public class Player implements Runnable {
         // note: this is a very very smart AI (!)
         aiThread = new Thread(() -> {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+            Random rnd = new Random();
             while (!terminate) {
-                // TODO implement player key press simulator
+                synchronized (inputQ) {
+                    System.out.println("plater" + id + " " /* + myState.getState() */ + " -- " + inputQ.size());
+                    if (inputQ.size() == MAX_SLOTS /* && myState.getState() == STATES.FREE_TO_GO */)
+                        try {
+                            inputQ.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                }
+                this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
                 try {
-                    synchronized (this) {
-                        wait();
-                    }
-                } catch (InterruptedException ignored) {
+                    Thread.sleep(SEC / 2);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
                 }
             }
             System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
         }, "computer-" + id);
-        aiThread.setDaemon(true);// will deteminate when the app close (potentialy SOL)
+        // aiThread.setDaemon(true);
+        // will deteminate when the app close (potentialySOL)
         aiThread.start();
     }
 
@@ -121,9 +175,8 @@ public class Player implements Runnable {
     public void terminate() {
         terminate = true;
         if (!human) {
-
+            aiThread.interrupt();
         }
-        // TODO implement
     }
 
     /**
@@ -132,7 +185,12 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        // TODO implement
+        synchronized (inputQ) {
+            if (inputQ.size() < Q_MAX_INP) {
+                inputQ.add(slot);
+                inputQ.notifyAll();
+            }
+        }
     }
 
     /**
@@ -142,28 +200,66 @@ public class Player implements Runnable {
      * @post - the player's score is updated in the ui.
      */
     public void point() {
-        // TODO implement
-
-        int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
+        System.out.println("fuunnn player " + id + " got point");
         try {
-            Thread.sleep(env.config.pointFreezeMillis);
+            // Thread.sleep(env.config.pointFreezeMillis);
+
+            Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
+            while (System.currentTimeMillis() < endFrz) {
+                env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
+                playerThread.sleep(SEC / 2);
+            }
         } catch (InterruptedException ignr) {
         }
+        reset(); // reset
+        env.ui.setFreeze(id, 0);
     }
 
     /**
      * Penalize a player and perform other related actions.
      */
     public void penalty() {
-        // TODO implement
+        System.out.println("damn player " + id + " penalised");
         try {
-            Thread.sleep(env.config.penaltyFreezeMillis);
+            // Thread.sleep(env.config.penaltyFreezeMillis);
+            Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
+            while (System.currentTimeMillis() < endFrz) {
+                env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
+                playerThread.sleep(SEC / 2);
+            }
         } catch (InterruptedException ignr) {
         }
+        if (human) {
+            synchronized (inputQ) {
+                this.inputQ.clear();
+                inputQ.notifyAll();
+            }
+        } else
+            reset();
+        env.ui.setFreeze(id, 0);
     }
 
     public int getScore() {
         return score;
+    }
+
+    public void reset() {
+        synchronized (inputQ) {
+            this.inputQ.clear();
+            inputQ.notifyAll();
+        }
+        usedTockens = 0;
+        table.resetPlayer(id);
+    }
+
+    public void notifyInputQ() {
+        synchronized (inputQ) {
+            inputQ.notifyAll();
+        }
+    }
+
+    public void tokenGotRemoved() {
+        usedTockens--;
     }
 }

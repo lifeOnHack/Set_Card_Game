@@ -3,6 +3,7 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -237,7 +238,7 @@ public class Table {
         synchronized (requests) {
             if (requests.contains(p.id)) {
                 requests.remove(p.id);
-                p.myState.wakeup(p);
+                //p.myState.wakeup(p);
             }
         }
     }
