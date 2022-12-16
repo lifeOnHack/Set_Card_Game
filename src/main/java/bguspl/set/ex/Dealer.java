@@ -131,7 +131,7 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         if (curset != null) {
-            table.removeAtPoint(curset[0], curset[1], curset[2], players);
+            table.removeAtPoint(curset[0], curset[1], curset[2], players, plysCheckReq);
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
             }
@@ -140,6 +140,7 @@ public class Dealer implements Runnable {
             }
         }
         curset = null;
+        //wakeAll();
     }
 
     /**
@@ -218,6 +219,7 @@ public class Dealer implements Runnable {
             deck.add(cardArr[i]);
             table.removeCard(i);
         }
+        //wakeAll();
     }
 
     /**

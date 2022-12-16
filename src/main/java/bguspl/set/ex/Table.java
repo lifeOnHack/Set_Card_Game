@@ -3,6 +3,7 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -220,20 +221,26 @@ public class Table {
         return playersSets[pId];
     }
 
-    public void removeAtPoint(int s1, int s2, int s3, Player[] players) {
+    public void removeAtPoint(int s1, int s2, int s3, Player[] players, LinkedList<Integer> requests) {
         for (int i = 0; i < playersSets.length; i++) {
             for (int j = 0; j < playersSets[i].length; j++) {
                 if (playersSets[i][j] == cardToSlot[s1]) {
                     if(removeToken(i, cardToSlot[s1])){
                         players[i].tokenGotRemoved();
+                        if(requests.contains(i))
+                            requests.remove(i);
                     }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
                     if(removeToken(i, cardToSlot[s2])){
                         players[i].tokenGotRemoved();
+                        if(requests.contains(i))
+                            requests.remove(i);
                     }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
                     if(removeToken(i, cardToSlot[s3])){
                         players[i].tokenGotRemoved();
+                        if(requests.contains(i))
+                            requests.remove(i);
                     }
                 }
             }
