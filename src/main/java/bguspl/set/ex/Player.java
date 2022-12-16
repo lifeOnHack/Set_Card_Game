@@ -296,4 +296,8 @@ public class Player implements Runnable {
             inputQ.notifyAll();
         }
     }
+
+    public void tokenGotRemoved(){
+        usedTockens--;
+    }
 }
