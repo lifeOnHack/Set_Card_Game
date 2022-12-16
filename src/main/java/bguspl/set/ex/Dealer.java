@@ -75,10 +75,15 @@ public class Dealer implements Runnable {
         myThread = Thread.currentThread();
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         initPlyrsThread();
-        startPT();
+        boolean s = true;
+
         while (!shouldFinish()) {
             placeCardsOnTable();
             updateTimerDisplay(true);
+            if (s) {
+                startPT();
+                s = false;
+            }
             timerLoop();
             // updateTimerDisplay(false);
             removeAllCardsFromTable();
@@ -262,9 +267,11 @@ public class Dealer implements Runnable {
                 this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
                 if (env.util.testSet(curset)) {
                     // interruptPlayer(curPly, STATES.DO_POINT);
+                    players[curPly].point();
                 } else {
                     // interruptPlayer(curPly, STATES.DO_PENALTY);
                     this.curset = null;
+                    players[curPly].penalty();
                 }
             }
         }

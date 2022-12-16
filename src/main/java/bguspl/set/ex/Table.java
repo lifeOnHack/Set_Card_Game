@@ -48,7 +48,7 @@ public class Table {
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
         this.playersSets = new Integer[env.config.players][3];
-
+        reset();
     }
 
     public Integer[] getSTC() {

@@ -146,7 +146,7 @@ public class Player implements Runnable {
             Random rnd = new Random();
             while (!terminate) {
                 synchronized (inputQ) {
-                    System.out.println("plater" + id + " " /* + myState.getState() */ + " -- " + inputQ.size());
+                    System.out.println("player" + id + " " /* + myState.getState() */ + " -- " + inputQ.size());
                     if (inputQ.size() == MAX_SLOTS /* && myState.getState() == STATES.FREE_TO_GO */)
                         try {
                             inputQ.wait();
