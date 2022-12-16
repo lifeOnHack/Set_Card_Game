@@ -225,24 +225,30 @@ public class Table {
         for (int i = 0; i < playersSets.length; i++) {
             for (int j = 0; j < playersSets[i].length; j++) {
                 if (playersSets[i][j] == cardToSlot[s1]) {
-                    if(removeToken(i, cardToSlot[s1])){
+                    if (removeToken(i, cardToSlot[s1])) {
                         players[i].tokenGotRemoved();
-                        if(requests.contains(i))
-                            requests.remove(i);
+                        rmvReq(players[i], requests);
                     }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    if(removeToken(i, cardToSlot[s2])){
+                    if (removeToken(i, cardToSlot[s2])) {
                         players[i].tokenGotRemoved();
-                        if(requests.contains(i))
-                            requests.remove(i);
+                        rmvReq(players[i], requests);
                     }
                 } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    if(removeToken(i, cardToSlot[s3])){
+                    if (removeToken(i, cardToSlot[s3])) {
                         players[i].tokenGotRemoved();
-                        if(requests.contains(i))
-                            requests.remove(i);
+                        rmvReq(players[i], requests);
                     }
                 }
+            }
+        }
+    }
+
+    private void rmvReq(Player p, LinkedList<Integer> requests) {
+        synchronized (requests) {
+            if (requests.contains(p.id)) {
+                requests.remove(p.id);
+                p.myState.wakeup(p);
             }
         }
     }
