@@ -223,12 +223,12 @@ public class Table {
     public void removeAtPoint(int s1, int s2, int s3) {
         for (int i = 0; i < playersSets.length; i++) {
             for (int j = 0; j < playersSets[i].length; j++) {
-                if (playersSets[i][j] == s1) {
-                    removeToken(i, s1);
-                } else if (playersSets[i][j] == s2) {
-                    removeToken(i, s2);
-                } else if (playersSets[i][j] == s3) {
-                    removeToken(i, s3);
+                if (playersSets[i][j] == cardToSlot[s1]) {
+                    removeToken(i, cardToSlot[s1]);
+                } else if (playersSets[i][j] == cardToSlot[s2]) {
+                    removeToken(i, cardToSlot[s2]);
+                } else if (playersSets[i][j] == cardToSlot[s2]) {
+                    removeToken(i, cardToSlot[s3]);
                 }
             }
         }

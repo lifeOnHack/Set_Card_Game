@@ -245,6 +245,7 @@ public class Dealer implements Runnable {
 
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
+            System.out.println("player"+p+" request check");
             plysCheckReq.addLast(p);
             myThread.interrupt();
         }

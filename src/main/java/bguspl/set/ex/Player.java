@@ -155,8 +155,10 @@ public class Player implements Runnable {
             while (!terminate) {
                 // pause by state
                 myState.makeAction(this);
+
                 synchronized (inputQ) {
-                    if (inputQ.size() == MAX_SLOTS && myState.getState() == STATES.FREE_TO_GO)
+                    System.out.println("plater" + id + " " + myState.getState() + " -- " + inputQ.size());
+                    if (inputQ.size() == MAX_SLOTS /* && myState.getState() == STATES.FREE_TO_GO */)
                         try {
                             inputQ.wait();
                         } catch (InterruptedException e) {
