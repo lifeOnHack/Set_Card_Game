@@ -25,7 +25,7 @@ public class Dealer implements Runnable {
     private final Player[] players;
     private final Thread[] tPlayers;
     private final LinkedList<Integer> plysCheckReq;
-    private int[] curset;
+    private int[] curset;// save current set that need to remove by the cards number
 
     /**
      * The list of card ids that are left in the dealer's deck.
@@ -135,6 +135,7 @@ public class Dealer implements Runnable {
             table.removeAtPoint(curset[0], curset[1], curset[2], players, plysCheckReq);
             for (int i = 0; i < curset.length; i++) {
                 table.removeByCard(curset[i]);
+                // env.ui.removeTokens(cardToSlot[i]);
             }
             if (env.config.turnTimeoutMillis >= 0) {
                 updateTimerDisplay(true);// means someone make point
@@ -149,7 +150,7 @@ public class Dealer implements Runnable {
     private void placeCardsOnTable() {
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
-            if (cardArr[i] == null) {
+            if (cardArr[i] == null & !deck.isEmpty()) {
                 int cc = deck.remove(0);// remove top card
                 table.placeCard(cc, i);
             }
@@ -198,7 +199,11 @@ public class Dealer implements Runnable {
             env.ui.setCountdown(t - reshuffleTime, false);
         } else {// <0
             LinkedList<Integer> local = new LinkedList<Integer>();
-            Collections.addAll(local, table.getSTC());
+            for (Integer intg : table.getSTC()) {
+                if (intg != null) {
+                    local.add(intg);
+                }
+            }
             if (env.util.findSets(local, 1).size() == 0) {
                 reshuffleTime = System.currentTimeMillis() - MIN_IN_MS;
                 System.out.println("there is no set");
@@ -250,7 +255,7 @@ public class Dealer implements Runnable {
             myThread.interrupt();
         }
         players[p].myState.setState(STATES.WAIT_FOR_RES);// freez player till results
-        System.out.println("player" + p + " request check");
+        //System.out.println("player" + p + " request check");
     }
 
     private void checkPlyrsSets() {
@@ -273,13 +278,11 @@ public class Dealer implements Runnable {
                     return;
                 }
                 if (env.util.testSet(curset)) {
-                    // interruptPlayer(curPly, STATES.DO_POINT);
                     synchronized (players[curPly].myState) {
                         players[curPly].myState.assignPoint();
                         players[curPly].myState.wakeup();
                     }
                 } else {
-                    // interruptPlayer(curPly, STATES.DO_PENALTY);
                     synchronized (players[curPly].myState) {
                         players[curPly].myState.assignPenalty();
                         players[curPly].myState.wakeup();

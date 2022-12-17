@@ -29,7 +29,7 @@ public class Table {
      * Mapping between a card and the slot it is in (null if none).
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
-    private Integer[][] playersSets;
+    private Integer[][] playersSets;// save players sets by slot
     private final int NOT_PLACED = -1;
     private final int MAX_TOKENS = 3;
 
@@ -141,12 +141,12 @@ public class Table {
     public int placeToken(int pId, int slot) {
         Integer[] pTokens = playersSets[pId];
         for (int i = 0; i < MAX_TOKENS; i++) {
-            if (NOT_PLACED == pTokens[i]) {
-                synchronized (pTokens) {
+            synchronized (pTokens) {
+                if (NOT_PLACED == pTokens[i]) {
                     pTokens[i] = slot;
+                    env.ui.placeToken(pId, slot);
+                    return 1;
                 }
-                env.ui.placeToken(pId, slot);
-                return 1;
             }
         }
         return 0;
@@ -162,12 +162,12 @@ public class Table {
     public boolean removeToken(int pId, int slot) {
         Integer[] pTokens = playersSets[pId];
         for (int i = 0; i < MAX_TOKENS; i++) {
-            if (slot == pTokens[i]) {
-                synchronized (pTokens) {
+            synchronized (pTokens) {
+                if (slot == pTokens[i]) {
                     pTokens[i] = NOT_PLACED;
+                    env.ui.removeToken(pId, slot);
+                    return true;
                 }
-                env.ui.removeToken(pId, slot);
-                return true;
             }
         }
         return false;
@@ -212,23 +212,25 @@ public class Table {
         return playersSets[pId];
     }
 
-    public void removeAtPoint(int s1, int s2, int s3, Player[] players, LinkedList<Integer> requests) {
+    public void removeAtPoint(int c1, int c2, int c3, Player[] players, LinkedList<Integer> requests) {
         for (int i = 0; i < playersSets.length; i++) {
-            for (int j = 0; j < playersSets[i].length; j++) {
-                if (playersSets[i][j] == cardToSlot[s1]) {
-                    if (removeToken(i, cardToSlot[s1])) {
-                        players[i].tokenGotRemoved();
-                        rmvReq(players[i], requests);
-                    }
-                } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    if (removeToken(i, cardToSlot[s2])) {
-                        players[i].tokenGotRemoved();
-                        rmvReq(players[i], requests);
-                    }
-                } else if (playersSets[i][j] == cardToSlot[s2]) {
-                    if (removeToken(i, cardToSlot[s3])) {
-                        players[i].tokenGotRemoved();
-                        rmvReq(players[i], requests);
+            synchronized (playersSets[i]) {// so the player cant add\remove tokens
+                for (int j = 0; j < playersSets[i].length; j++) {
+                    if (playersSets[i][j] == cardToSlot[c1]) {
+                        if (removeToken(i, cardToSlot[c1])) {
+                            players[i].tokenGotRemoved();
+                            rmvReq(players[i], requests);
+                        }
+                    } else if (playersSets[i][j] == cardToSlot[c2]) {
+                        if (removeToken(i, cardToSlot[c2])) {
+                            players[i].tokenGotRemoved();
+                            rmvReq(players[i], requests);
+                        }
+                    } else if (playersSets[i][j] == cardToSlot[c3]) {
+                        if (removeToken(i, cardToSlot[c3])) {
+                            players[i].tokenGotRemoved();
+                            rmvReq(players[i], requests);
+                        }
                     }
                 }
             }
@@ -236,10 +238,11 @@ public class Table {
     }
 
     private void rmvReq(Player p, LinkedList<Integer> requests) {
+        Integer id = p.id;
         synchronized (requests) {
             if (requests.contains(p.id)) {
                 System.out.println("remove at point p" + p.id);
-                requests.remove(p.id);
+                requests.remove(id);
                 p.myState.setState(STATES.FREE_TO_GO);
                 p.myState.wakeup();
             }

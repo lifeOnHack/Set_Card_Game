@@ -114,7 +114,7 @@ public class Player implements Runnable {
                 break;
             }
             synchronized (inputQ) {
-                while (inputQ.size() == 0 /* && myState.getState() == STATES.FREE_TO_GO */) {
+                while (inputQ.size() == 0 && !terminate/* && myState.getState() == STATES.FREE_TO_GO */) {
                     try {
                         inputQ.wait();
                     } catch (InterruptedException ignored) {
@@ -127,12 +127,18 @@ public class Player implements Runnable {
                 // add/remove tocken from card
                 boolean rmvFirst = usedTockens == Q_MAX_INP;
                 synchronized (inputQ) {
-                    usedTockens += table.setTokIfNeed(this.id, inputQ.remove());
+                    int tres = table.setTokIfNeed(this.id, inputQ.remove());
+                    synchronized (this) {
+                        usedTockens += tres;
+                    }
                     inputQ.notifyAll();
                 }
-                if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
-                    dlr.addCheckReq(id);
+                synchronized (this) {
+                    if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
+                        dlr.addCheckReq(id);
+                    }
                 }
+
                 synchronized (inputQ) {
                     curSize = inputQ.size();
                 }
@@ -163,7 +169,8 @@ public class Player implements Runnable {
                     synchronized (inputQ) {
                         // System.out.println("player" + id + " " + myState.getState() + " -- " +
                         // inputQ.size());
-                        while (inputQ.size() == Q_MAX_INP /* && myState.getState() == STATES.FREE_TO_GO */)
+                        while (inputQ.size() == Q_MAX_INP
+                                && !terminate /* && myState.getState() == STATES.FREE_TO_GO */)
                             try {
                                 inputQ.wait();
                             } catch (InterruptedException e) {
@@ -195,6 +202,8 @@ public class Player implements Runnable {
         if (!human) {
             aiThread.interrupt();
         }
+        myState.setState(STATES.END);
+        inputQ.notifyAll();
     }
 
     /**
@@ -246,7 +255,7 @@ public class Player implements Runnable {
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
-                playerThread.sleep(SEC / 2);
+                playerThread.sleep(SEC / 4);
             }
         } catch (InterruptedException ignr) {
         }
@@ -272,7 +281,9 @@ public class Player implements Runnable {
             inputQ.notifyAll();
             System.out.println("notify input");
         }
-        usedTockens = 0;
+        synchronized (this) {
+            usedTockens = 0;
+        }
         myState.delRun();
         myState.setState(STATES.FREE_TO_GO);
         table.resetPlayer(id);
@@ -284,7 +295,7 @@ public class Player implements Runnable {
         }
     }
 
-    public void tokenGotRemoved() {
+    public synchronized void tokenGotRemoved() {
         usedTockens--;
     }
 }

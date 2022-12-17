@@ -5,7 +5,8 @@ enum STATES {
     FREE_TO_GO,
     WAIT_FOR_RES,
     DO_PENALTY,
-    DO_POINT
+    DO_POINT,
+    END
 }
 
 public class StateLock {
