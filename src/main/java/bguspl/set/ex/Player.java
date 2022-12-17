@@ -203,7 +203,7 @@ public class Player implements Runnable {
             aiThread.interrupt();
         }
         myState.setState(STATES.END);
-        inputQ.notifyAll();
+        this.notifyInputQ();
     }
 
     /**

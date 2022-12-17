@@ -122,10 +122,12 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
+        if (slotToCard[slot] != null) {
+            cardToSlot[slotToCard[slot]] = null;
+            slotToCard[slot] = null;
+            env.ui.removeCard(slot);
+        }
 
-        cardToSlot[slotToCard[slot]] = null;
-        slotToCard[slot] = null;
-        env.ui.removeCard(slot);
     }
 
     public void removeByCard(int card) {
@@ -140,12 +142,14 @@ public class Table {
      */
     public int placeToken(int pId, int slot) {
         Integer[] pTokens = playersSets[pId];
-        for (int i = 0; i < MAX_TOKENS; i++) {
-            synchronized (pTokens) {
-                if (NOT_PLACED == pTokens[i]) {
-                    pTokens[i] = slot;
-                    env.ui.placeToken(pId, slot);
-                    return 1;
+        if (slotToCard[slot] != null) {
+            for (int i = 0; i < MAX_TOKENS; i++) {
+                synchronized (pTokens) {
+                    if (NOT_PLACED == pTokens[i]) {
+                        pTokens[i] = slot;
+                        env.ui.placeToken(pId, slot);
+                        return 1;
+                    }
                 }
             }
         }
