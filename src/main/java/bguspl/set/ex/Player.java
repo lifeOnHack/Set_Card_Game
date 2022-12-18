@@ -125,16 +125,17 @@ public class Player implements Runnable {
             }
             while (curSize > 0) {
                 // add/remove tocken from card
-                boolean rmvFirst = usedTockens == Q_MAX_INP;
+                // boolean rmvFirst = usedTockens == Q_MAX_INP;
+                int tres;
                 synchronized (inputQ) {
-                    int tres = table.setTokIfNeed(this.id, inputQ.remove());
+                    tres = table.setTokIfNeed(this.id, inputQ.remove());
                     synchronized (this) {
                         usedTockens += tres;
                     }
                     inputQ.notifyAll();
                 }
                 synchronized (this) {
-                    if (usedTockens == Q_MAX_INP /* &&!rmvFirst */) {
+                    if (usedTockens == Q_MAX_INP & tres != 0) {
                         dlr.addCheckReq(id);
                     }
                 }

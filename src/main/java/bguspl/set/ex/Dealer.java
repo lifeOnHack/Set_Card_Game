@@ -76,12 +76,15 @@ public class Dealer implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         initPlyrsThread();
         boolean s = true;
-        for (int index = 0; index < deck.size(); index++) {
-            if (index > 20) {
-                deck.remove(index);
-                index--;
-            }
-        }
+        /*
+         * for quick testing
+         * for (int index = 0; index < deck.size(); index++) {
+         * if (index > 20) {
+         * deck.remove(index);
+         * index--;
+         * }
+         * }
+         */
         shuffleNReset();
         while (!shouldFinish()) {
             placeCardsOnTable();
