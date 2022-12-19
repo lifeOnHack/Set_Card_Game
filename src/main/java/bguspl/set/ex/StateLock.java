@@ -29,19 +29,21 @@ public class StateLock {
         notifyAll();
     }
 
-    public synchronized void nextMove() throws InterruptedException {
+    public void nextMove() throws InterruptedException {
         boolean runReady;
         synchronized (runLock) {
             runReady = resFunc != null;
         }
         if (!runReady)
-            if (state == STATES.STOP | state == STATES.WAIT_FOR_RES) {
-                wait();
+            synchronized (this) {
+                if (state == STATES.STOP | state == STATES.WAIT_FOR_RES) {
+                    wait();
+                }
             }
         makeAction();
     }
 
-    public synchronized void makeAction() {
+    public void makeAction() {
 
         synchronized (runLock) {
             if (resFunc != null) {
@@ -62,7 +64,7 @@ public class StateLock {
                 @Override
                 public void run() {
                     p.point();
-                    p.reset();
+                    //p.reset();
                 }
             };
         }

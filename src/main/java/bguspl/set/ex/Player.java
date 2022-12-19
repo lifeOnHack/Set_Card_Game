@@ -139,7 +139,6 @@ public class Player implements Runnable {
                         dlr.addCheckReq(id);
                     }
                 }
-
                 synchronized (inputQ) {
                     curSize = inputQ.size();
                 }
@@ -241,7 +240,7 @@ public class Player implements Runnable {
             myState.setState(STATES.FREE_TO_GO);
         } catch (InterruptedException ignr) {
         }
-        // reset(); // reset
+        reset(); // reset
         env.ui.setFreeze(id, 0);
     }
 

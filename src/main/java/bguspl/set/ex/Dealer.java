@@ -289,7 +289,7 @@ public class Dealer implements Runnable {
                     synchronized (stc) {
                         this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
                     }
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                     players[curPly].reset();
                     System.out.println(e);
                     return;
@@ -314,7 +314,7 @@ public class Dealer implements Runnable {
         Collections.shuffle(deck);
         for (Player p : players) {
             p.reset();
-        }
+        } // dealer freez here untill everybody finish penalty\score
         table.reset();
         synchronized (plysCheckReq) {
             plysCheckReq.clear();
