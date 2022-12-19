@@ -181,7 +181,7 @@ public class Player implements Runnable {
                     }
                     this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
                     try {
-                        Thread.sleep(SEC / 2);
+                        Thread.sleep(SEC / 5);
                     } catch (InterruptedException e) {
                         // e.printStackTrace();
                         break;
@@ -256,7 +256,7 @@ public class Player implements Runnable {
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
-                playerThread.sleep(SEC / 4);
+                playerThread.sleep(SEC / 2);
             }
         } catch (InterruptedException ignr) {
         }
@@ -280,7 +280,6 @@ public class Player implements Runnable {
         synchronized (inputQ) {
             this.inputQ.clear();
             inputQ.notifyAll();
-            System.out.println("notify input");
         }
         synchronized (this) {
             usedTockens = 0;

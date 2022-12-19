@@ -122,12 +122,13 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {
         }
-        if (slotToCard[slot] != null) {
-            cardToSlot[slotToCard[slot]] = null;
-            slotToCard[slot] = null;
-            env.ui.removeCard(slot);
+        synchronized (slotToCard) {
+            if (slotToCard[slot] != null) {
+                cardToSlot[slotToCard[slot]] = null;
+                slotToCard[slot] = null;
+                env.ui.removeCard(slot);
+            }
         }
-
     }
 
     public void removeByCard(int card) {
@@ -205,7 +206,7 @@ public class Table {
                 pTokens[j] = NOT_PLACED;
             }
         }
-        System.out.println("player" + id + " reset");
+        // System.out.println("player" + id + " reset");
     }
 
     public void resetPlayer(int pId) {
@@ -239,6 +240,7 @@ public class Table {
                 }
             }
         }
+        System.out.println("remove at point done");
     }
 
     private void rmvReq(Player p, LinkedList<Integer> requests) {

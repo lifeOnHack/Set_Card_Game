@@ -156,9 +156,11 @@ public class Dealer implements Runnable {
     private void placeCardsOnTable() {
         Integer[] cardArr = table.getSTC();
         for (int i = 0; i < cardArr.length; i++) {
-            if (cardArr[i] == null & !deck.isEmpty()) {
-                int cc = deck.remove(0);// remove top card
-                table.placeCard(cc, i);
+            synchronized (cardArr) {
+                if (cardArr[i] == null & !deck.isEmpty()) {
+                    int cc = deck.remove(0);// remove top card
+                    table.placeCard(cc, i);
+                }
             }
         }
     }
@@ -192,7 +194,7 @@ public class Dealer implements Runnable {
             env.ui.setCountdown(tLeft > 0 ? tLeft : 0, reshuffleTime - t <= env.config.turnTimeoutWarningMillis);
             // setElapsed
         } else if (env.config.turnTimeoutMillis == 0) {// start from zero up =0
-            if (t - reshuffleTime > MIN_IN_MS) {
+            if (env.util.findSets(deckToCheck(), 1).size() == 0) {
                 // stopAll();
                 removeAllCardsFromTable();
                 placeCardsOnTable();
@@ -204,13 +206,7 @@ public class Dealer implements Runnable {
             }
             env.ui.setCountdown(t - reshuffleTime, false);
         } else {// <0
-            LinkedList<Integer> local = new LinkedList<Integer>();
-            for (Integer intg : table.getSTC()) {
-                if (intg != null) {
-                    local.add(intg);
-                }
-            }
-            if (env.util.findSets(local, 1).size() == 0) {
+            if (env.util.findSets(deckToCheck(), 1).size() == 0) {
                 reshuffleTime = System.currentTimeMillis() - MIN_IN_MS;
                 System.out.println("there is no set");
             } else {
@@ -219,17 +215,27 @@ public class Dealer implements Runnable {
         }
     }
 
+    private LinkedList<Integer> deckToCheck() {
+        LinkedList<Integer> res = new LinkedList<Integer>();
+        for (Integer intg : table.getSTC()) {
+            if (intg != null) {
+                res.add(intg);
+            }
+        }
+        return res;
+    }
+
     /**
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
         Integer[] cardArr = table.getSTC();
+        env.ui.removeTokens();
         for (int i = 0; i < cardArr.length; i++) {
             if (cardArr[i] != null) {
                 deck.add(cardArr[i]);
                 table.removeCard(i);
             }
-
         }
         // cuz this func accure when round is over
         shuffleNReset();
@@ -269,7 +275,6 @@ public class Dealer implements Runnable {
 
     private void checkPlyrsSets() {
         int curPly = -1;
-        Integer[] stc = table.getSTC();
         synchronized (this.plysCheckReq) {
             if (!this.plysCheckReq.isEmpty()) {
                 curPly = plysCheckReq.removeFirst();
@@ -280,24 +285,27 @@ public class Dealer implements Runnable {
             Integer[] set = table.getPlyrTok(curPly);
             synchronized (set) {
                 try {
-                    this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                    Integer[] stc = table.getSTC();
+                    synchronized (stc) {
+                        this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                    }
                 } catch (ArrayIndexOutOfBoundsException e) {
                     players[curPly].reset();
                     System.out.println(e);
                     return;
                 }
-                if (env.util.testSet(curset)) {
-                    synchronized (players[curPly].myState) {
-                        players[curPly].myState.assignPoint();
-                        players[curPly].myState.wakeup();
-                    }
-                } else {
-                    synchronized (players[curPly].myState) {
-                        players[curPly].myState.assignPenalty();
-                        players[curPly].myState.wakeup();
-                    }
-                    this.curset = null;
+            }
+            if (env.util.testSet(curset)) {
+                synchronized (players[curPly].myState) {
+                    players[curPly].myState.assignPoint();
+                    players[curPly].myState.wakeup();
                 }
+            } else {
+                synchronized (players[curPly].myState) {
+                    players[curPly].myState.assignPenalty();
+                    players[curPly].myState.wakeup();
+                }
+                this.curset = null;
             }
         }
     }
