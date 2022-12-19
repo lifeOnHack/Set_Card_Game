@@ -255,13 +255,18 @@ public class Dealer implements Runnable {
                 numOfWinners++;
             }
         }
+        
+        env.ui.announceWinner(findWinners(numOfWinners, bestScore));
+    }
+
+    private int[] findWinners(int numOfWinners, int bestScore){
         int[] winners = new int[numOfWinners];
         for (Player player : players) {
             if (player.getScore() == bestScore) {
                 winners[--numOfWinners] = player.id;
             }
         }
-        env.ui.announceWinner(winners);
+        return winners;
     }
 
     public void addCheckReq(int p) {
