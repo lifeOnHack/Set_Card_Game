@@ -24,11 +24,12 @@ import static org.mockito.Mockito.when;
 class DealerTest {
     
     private Dealer dealer;
+    private Player[] players;
     private Config config;
     @Mock
     private Table table;
     @Mock
-    private Player[] players;
+    private Player player;
     @Mock
     private Logger logger;
     @Mock
@@ -41,11 +42,12 @@ class DealerTest {
     void setUp(){
         config = new Config(logger, "");
         Env env = new Env(logger, config, ui, util);
+        players = new Player[env.config.players];
         dealer = new Dealer(env, table, players);
     }
 
     @Test
     void addCheckReq_ab(){
-        
+       assertTrue(true); 
     }
 }
