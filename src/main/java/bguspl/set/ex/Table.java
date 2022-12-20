@@ -197,7 +197,7 @@ public class Table {
         }
     }
 
-    private Integer[] resetPlayer(Integer[] pTokens, int id) {
+    private void resetPlayer(Integer[] pTokens, int id) {
         synchronized (pTokens) {
             for (int j = 0; j < MAX_TOKENS; j++) {
                 if (pTokens[j] != null && pTokens[j] != NOT_PLACED) {
@@ -206,7 +206,6 @@ public class Table {
                 pTokens[j] = NOT_PLACED;
             }
         }
-        return pTokens; //for the tests
         // System.out.println("player" + id + " reset");
     }
 

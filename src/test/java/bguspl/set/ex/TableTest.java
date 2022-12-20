@@ -80,7 +80,7 @@ class TableTest {
         }
     }
 
-    private int fillSomeSlots() {
+    private int fillTwoSlots() {
         slotToCard[1] = 3;
         slotToCard[2] = 5;
         cardToSlot[3] = 1;
@@ -88,6 +88,19 @@ class TableTest {
 
         return 2;
     }
+
+    private int[] fillThreeSlots(){
+        slotToCard[10] = 5;
+        slotToCard[3] = 7;
+        slotToCard[6] = 2;
+        cardToSlot[5] = 10;
+        cardToSlot[7] = 3;
+        cardToSlot[2] = 6;
+
+        int[] slotsFilled = {10, 3, 6};
+        return slotsFilled;
+    }
+
 
     private void fillAllSlots() {
         for (int i = 0; i < slotToCard.length; ++i) {
@@ -105,7 +118,7 @@ class TableTest {
     @Test
     void countCards_SomeSlotsAreFilled() {
 
-        int slotsFilled = fillSomeSlots();
+        int slotsFilled = fillTwoSlots();
         assertEquals(slotsFilled, table.countCards());
     }
 
@@ -117,8 +130,25 @@ class TableTest {
     }
 
     @Test
-    void resetPlayer(){
+    void placeToken_placeWhereTheresNoCard(){
+        assertEquals(0, table.placeToken(0, 0)); 
+    }
 
+    @Test
+    void placeToken_placeThreeTokens(){
+        int[] slotsFilled = fillThreeSlots();
+        for (int slot : slotsFilled) {
+            assertEquals(1, table.placeToken(0, slot));
+        }    
+    }
+
+    @Test
+    void placeToken_placeFourTokens(){
+        fillAllSlots();
+        for (int i = 0; i < 3; i++) {
+            assertEquals(1, table.placeToken(0, i));
+        }
+        assertEquals(0, table.placeToken(0, 4));
     }
 
     /*@Test

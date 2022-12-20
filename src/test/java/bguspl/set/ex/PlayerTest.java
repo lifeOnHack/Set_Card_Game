@@ -36,6 +36,7 @@ class PlayerTest {
     private Logger logger;
 
     void assertInvariants() {
+        assertTrue(player.inputQ.isEmpty());
         assertTrue(player.id >= 0);
         assertTrue(player.getScore() >= 0);
     }
@@ -55,7 +56,7 @@ class PlayerTest {
 
     @Test
     void keyPressed_insertOneElem(){
-        assertTrue(player.inputQ.isEmpty());
+        
         int elem = 2;
         player.keyPressed(elem);
         assertFalse(player.inputQ.isEmpty());
@@ -65,7 +66,7 @@ class PlayerTest {
 
     @Test
     void keyPressed_insertThreeElem(){
-        assertTrue(player.inputQ.isEmpty());
+        
         int elem1 = 2;
         int elem2 = 7;
         int elem3 = 8;
@@ -81,7 +82,7 @@ class PlayerTest {
 
     @Test
     void keyPressed_insertFourElem(){
-        assertTrue(player.inputQ.isEmpty());
+       
         int elem1 = 2;
         int elem2 = 7;
         int elem3 = 8;
@@ -100,7 +101,7 @@ class PlayerTest {
 
     @Test
     void keyPressed_insertSameElemMultTimes(){
-        assertTrue(player.inputQ.isEmpty());
+        
         int elem = 3;
         player.keyPressed(elem);
         player.keyPressed(elem);
