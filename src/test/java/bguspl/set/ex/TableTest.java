@@ -74,9 +74,9 @@ class TableTest {
     void assertSetUp(){
         for(int i = 0; i < config.players; i++){
             Integer[] playersTokens = table.getPlyrTok(i);
-            assertEquals(playersTokens[0], -1);
-            assertEquals(playersTokens[1], -1);
-            assertEquals(playersTokens[2], -1);
+            for(int j = 0; j < playersTokens.length; j++){
+                assertEquals(-1, playersTokens[j]);
+            }
         }
     }
 
@@ -96,31 +96,29 @@ class TableTest {
         }
     }
 
-    /*private void placeSomeCardsAndAssert() {
-        table.placeCard(8, 2);
-
-        assertEquals(8, (int) slotToCard[2]);
-        assertEquals(2, (int) cardToSlot[8]);
-    }*/
-
     @Test
     void countCards_NoSlotsAreFilled() {
 
-        assertEquals(table.countCards(), 0);
+        assertEquals(0, table.countCards());
     }
 
     @Test
     void countCards_SomeSlotsAreFilled() {
 
         int slotsFilled = fillSomeSlots();
-        assertEquals(table.countCards(), slotsFilled);
+        assertEquals(slotsFilled, table.countCards());
     }
 
     @Test
     void countCards_AllSlotsAreFilled() {
 
         fillAllSlots();
-        assertEquals(table.countCards(), slotToCard.length);
+        assertEquals(slotToCard.length, table.countCards());
+    }
+
+    @Test
+    void resetPlayer(){
+
     }
 
     /*@Test
