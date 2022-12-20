@@ -265,6 +265,7 @@ public class Dealer implements Runnable {
         env.ui.announceWinner(winners);
     }
 
+
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
             plysCheckReq.addLast(p);
