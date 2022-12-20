@@ -274,6 +274,10 @@ public class Dealer implements Runnable {
         // System.out.println("player" + p + " request check");
     }
 
+    public LinkedList<Integer> getPlysCheckReq(){
+        return plysCheckReq;
+    }
+
     private void checkPlyrsSets() {
         int curPly = -1;
         synchronized (this.plysCheckReq) {
