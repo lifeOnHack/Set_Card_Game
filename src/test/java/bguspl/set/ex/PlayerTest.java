@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -53,6 +54,65 @@ class PlayerTest {
     }
 
     @Test
+    void keyPressed_insertOneElem(){
+        assertTrue(player.inputQ.isEmpty());
+        int elem = 2;
+        player.keyPressed(elem);
+        assertFalse(player.inputQ.isEmpty());
+        assertEquals(player.inputQ.size(), 1);
+        assertTrue(player.inputQ.contains(elem));
+    }
+
+    @Test
+    void keyPressed_insertThreeElem(){
+        assertTrue(player.inputQ.isEmpty());
+        int elem1 = 2;
+        int elem2 = 7;
+        int elem3 = 8;
+        player.keyPressed(elem1);
+        player.keyPressed(elem2);
+        player.keyPressed(elem3);
+        assertFalse(player.inputQ.isEmpty());
+        assertEquals(player.inputQ.size(), 3);
+        assertTrue(player.inputQ.contains(elem1));
+        assertTrue(player.inputQ.contains(elem2));
+        assertTrue(player.inputQ.contains(elem3));
+    }
+
+    @Test
+    void keyPressed_insertFourElem(){
+        assertTrue(player.inputQ.isEmpty());
+        int elem1 = 2;
+        int elem2 = 7;
+        int elem3 = 8;
+        int elem4 = 4;
+        player.keyPressed(elem1);
+        player.keyPressed(elem2);
+        player.keyPressed(elem3);
+        player.keyPressed(elem4);
+        assertFalse(player.inputQ.isEmpty());
+        assertEquals(player.inputQ.size(), 3);
+        assertTrue(player.inputQ.contains(elem1));
+        assertTrue(player.inputQ.contains(elem2));
+        assertTrue(player.inputQ.contains(elem3));
+        assertFalse(player.inputQ.contains(elem4));
+    }
+
+    @Test
+    void keyPressed_insertSameElemMultTimes(){
+        assertTrue(player.inputQ.isEmpty());
+        int elem = 3;
+        player.keyPressed(elem);
+        player.keyPressed(elem);
+        assertFalse(player.inputQ.isEmpty());
+        assertEquals(player.inputQ.size(), 2);
+        assertTrue(player.inputQ.contains(elem));
+    }
+
+
+
+    /*
+    @Test
     void point() {
 
         // force table.countCards to return 3
@@ -69,5 +129,5 @@ class PlayerTest {
 
         // check that ui.setScore was called with the player's id and the correct score
         verify(ui).setScore(eq(player.id), eq(expectedScore));
-    }
+    }*/
 }
