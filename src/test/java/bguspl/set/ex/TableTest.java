@@ -13,16 +13,42 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.logging.Logger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class TableTest {
 
     Table table;
     private Integer[] slotToCard;
     private Integer[] cardToSlot;
+    Config config;
+    @Mock
+    Util util;
+    @Mock
+    private UserInterface ui;
+    @Mock
+    private Player player;
+    @Mock
+    private Dealer dealer;
+    @Mock
+    private Logger logger;
 
     @BeforeEach
     void setUp() {
 
-        Properties properties = new Properties();
+        /*Properties properties = new Properties();
         properties.put("Rows", "2");
         properties.put("Columns", "2");
         properties.put("FeatureSize", "3");
@@ -34,9 +60,24 @@ class TableTest {
         Config config = new Config(logger, properties);
         slotToCard = new Integer[config.tableSize];
         cardToSlot = new Integer[config.deckSize];
-
+        
         Env env = new Env(logger, config, new MockUserInterface(), new MockUtil());
+        table = new Table(env, slotToCard, cardToSlot);*/
+
+        config = new Config(logger, "");
+        Env env = new Env(logger, config, ui, util);
+        slotToCard = new Integer[config.tableSize];
+        cardToSlot = new Integer[config.deckSize];
         table = new Table(env, slotToCard, cardToSlot);
+    }
+
+    void assertSetUp(){
+        for(int i = 0; i < config.players; i++){
+            Integer[] playersTokens = table.getPlyrTok(i);
+            assertEquals(playersTokens[0], -1);
+            assertEquals(playersTokens[1], -1);
+            assertEquals(playersTokens[2], -1);
+        }
     }
 
     private int fillSomeSlots() {
@@ -55,34 +96,34 @@ class TableTest {
         }
     }
 
-    private void placeSomeCardsAndAssert() {
+    /*private void placeSomeCardsAndAssert() {
         table.placeCard(8, 2);
 
         assertEquals(8, (int) slotToCard[2]);
         assertEquals(2, (int) cardToSlot[8]);
-    }
+    }*/
 
     @Test
     void countCards_NoSlotsAreFilled() {
 
-        assertEquals(0, table.countCards());
+        assertEquals(table.countCards(), 0);
     }
 
     @Test
     void countCards_SomeSlotsAreFilled() {
 
         int slotsFilled = fillSomeSlots();
-        assertEquals(slotsFilled, table.countCards());
+        assertEquals(table.countCards(), slotsFilled);
     }
 
     @Test
     void countCards_AllSlotsAreFilled() {
 
         fillAllSlots();
-        assertEquals(slotToCard.length, table.countCards());
+        assertEquals(table.countCards(), slotToCard.length);
     }
 
-    @Test
+    /*@Test
     void placeCard_SomeSlotsAreFilled() {
 
         fillSomeSlots();
@@ -93,9 +134,9 @@ class TableTest {
     void placeCard_AllSlotsAreFilled() {
         fillAllSlots();
         placeSomeCardsAndAssert();
-    }
+    }*/
 
-    static class MockUserInterface implements UserInterface {
+    /*static class MockUserInterface implements UserInterface {
         @Override
         public void placeCard(int card, int slot) {}
         @Override
@@ -146,5 +187,5 @@ class TableTest {
         protected MockLogger() {
             super("", null);
         }
-    }
+    }*/
 }
