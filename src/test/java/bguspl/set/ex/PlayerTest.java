@@ -59,7 +59,7 @@ class PlayerTest {
         int elem = 2;
         player.keyPressed(elem);
         assertFalse(player.inputQ.isEmpty());
-        assertEquals(player.inputQ.size(), 1);
+        assertEquals(1, player.inputQ.size());
         assertTrue(player.inputQ.contains(elem));
     }
 
@@ -73,7 +73,7 @@ class PlayerTest {
         player.keyPressed(elem2);
         player.keyPressed(elem3);
         assertFalse(player.inputQ.isEmpty());
-        assertEquals(player.inputQ.size(), 3);
+        assertEquals(3, player.inputQ.size());
         assertTrue(player.inputQ.contains(elem1));
         assertTrue(player.inputQ.contains(elem2));
         assertTrue(player.inputQ.contains(elem3));
@@ -91,7 +91,7 @@ class PlayerTest {
         player.keyPressed(elem3);
         player.keyPressed(elem4);
         assertFalse(player.inputQ.isEmpty());
-        assertEquals(player.inputQ.size(), 3);
+        assertEquals(3, player.inputQ.size());
         assertTrue(player.inputQ.contains(elem1));
         assertTrue(player.inputQ.contains(elem2));
         assertTrue(player.inputQ.contains(elem3));
@@ -105,7 +105,7 @@ class PlayerTest {
         player.keyPressed(elem);
         player.keyPressed(elem);
         assertFalse(player.inputQ.isEmpty());
-        assertEquals(player.inputQ.size(), 2);
+        assertEquals(2, player.inputQ.size());
         assertTrue(player.inputQ.contains(elem));
     }
 
