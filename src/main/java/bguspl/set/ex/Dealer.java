@@ -172,7 +172,8 @@ public class Dealer implements Runnable {
     private void sleepUntilWokenOrTimeout() {
         try {
             // System.out.println(env.config.players * SLEEP_TIME);
-            Thread.sleep(env.config.players * SLEEP_TIME);
+            if (reshuffleTime - System.currentTimeMillis() > env.config.turnTimeoutWarningMillis)
+                Thread.sleep(env.config.players * SLEEP_TIME);
         } catch (InterruptedException e) {
 
         } finally {
@@ -280,8 +281,8 @@ public class Dealer implements Runnable {
                 curPly = plysCheckReq.removeFirst();
             }
         }
+        updateTimerDisplay(false);
         if (curPly != -1) {
-            updateTimerDisplay(false);
             Integer[] set = table.getPlyrTok(curPly);
             synchronized (set) {
                 try {
@@ -295,6 +296,7 @@ public class Dealer implements Runnable {
                     return;
                 }
             }
+            updateTimerDisplay(false);
             if (env.util.testSet(curset)) {
                 synchronized (players[curPly].myState) {
                     players[curPly].myState.assignPoint();
@@ -307,6 +309,7 @@ public class Dealer implements Runnable {
                 }
                 this.curset = null;
             }
+            updateTimerDisplay(false);
         }
     }
 

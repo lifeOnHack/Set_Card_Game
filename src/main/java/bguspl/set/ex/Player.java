@@ -180,7 +180,7 @@ public class Player implements Runnable {
                     }
                     this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
                     try {
-                        Thread.sleep(SEC / 5);
+                        Thread.sleep(env.config.tableDelayMillis);
                     } catch (InterruptedException e) {
                         // e.printStackTrace();
                         break;
