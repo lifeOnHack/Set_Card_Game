@@ -167,8 +167,6 @@ public class Player implements Runnable {
             while (!terminate) {
                 if (myState.getState() == STATES.FREE_TO_GO) {
                     synchronized (inputQ) {
-                        // System.out.println("player" + id + " " + myState.getState() + " -- " +
-                        // inputQ.size());
                         while (inputQ.size() == Q_MAX_INP
                                 && !terminate /* && myState.getState() == STATES.FREE_TO_GO */)
                             try {
@@ -178,9 +176,9 @@ public class Player implements Runnable {
                                 break;
                             }
                     }
-                    this.keyPressed(rnd.nextInt(MAX_SLOTS + 1));
+                    this.keyPressed(rnd.nextInt(env.config.tableSize));
                     try {
-                        Thread.sleep(env.config.tableDelayMillis);
+                        Thread.sleep(1);
                     } catch (InterruptedException e) {
                         // e.printStackTrace();
                         break;
@@ -237,10 +235,10 @@ public class Player implements Runnable {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
                 playerThread.sleep(SEC / 2);
             }
-            myState.setState(STATES.FREE_TO_GO);
+
         } catch (InterruptedException ignr) {
         }
-        reset(); // reset
+        reset(); // reset and FREE_TO_GO
         env.ui.setFreeze(id, 0);
     }
 
@@ -251,7 +249,7 @@ public class Player implements Runnable {
         // System.out.println("damn player " + id + " penalised");
         try {
             // Thread.sleep(env.config.penaltyFreezeMillis);
-            myState.setState(STATES.FREE_TO_GO);
+
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
@@ -259,15 +257,11 @@ public class Player implements Runnable {
             }
         } catch (InterruptedException ignr) {
         }
-
-        if (human) {
-            synchronized (inputQ) {
-                this.inputQ.clear();
-                inputQ.notifyAll();
-            }
-        } else
-            reset();
-
+        synchronized (inputQ) {
+            this.inputQ.clear();
+            inputQ.notifyAll();
+        }
+        myState.setState(STATES.FREE_TO_GO);
         env.ui.setFreeze(id, 0);
     }
 
@@ -286,6 +280,7 @@ public class Player implements Runnable {
         myState.delRun();
         myState.setState(STATES.FREE_TO_GO);
         table.resetPlayer(id);
+        System.out.println("reset player" + id);
     }
 
     public void notifyInputQ() {
@@ -296,5 +291,9 @@ public class Player implements Runnable {
 
     public synchronized void tokenGotRemoved() {
         usedTockens--;
+    }
+
+    public synchronized void fixTockens(int curTockens) {
+        usedTockens = curTockens;
     }
 }
