@@ -63,8 +63,8 @@ public class Table {
         int[] set = new int[MAX_TOKENS];
         int curTockens = 0;
         boolean falseSet = false;
-        synchronized (playersSets[p.id]) {
-            synchronized (slotToCard) {
+        synchronized (slotToCard) {
+            synchronized (playersSets[p.id]) {
                 for (int i = 0; i < MAX_TOKENS; i++) {
                     if (playersSets[p.id][i] != -1 && slotToCard[playersSets[p.id][i]] != null) {
                         curTockens++;
@@ -76,6 +76,8 @@ public class Table {
             }
         }
         p.fixTockens(curTockens);
+        p.notifyInputQ();
+        p.myState.setState(STATES.FREE_TO_GO);
         return falseSet ? null : set;
     }
 

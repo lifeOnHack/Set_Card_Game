@@ -99,7 +99,7 @@ public class Dealer implements Runnable {
      * not time out.
      */
     private void timerLoop() {
-        while (!terminate && System.currentTimeMillis() < reshuffleTime) {
+        while (!terminate && (System.currentTimeMillis() < reshuffleTime || env.config.turnTimeoutMillis <= 0)) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
             removeCardsFromTable();// iff needed
@@ -198,6 +198,10 @@ public class Dealer implements Runnable {
                     p.myState.setState(STATES.STOP);
                 }
                 removeAllCardsFromTable();
+                if (shouldFinish()) {
+                    terminate = true;
+                    return;
+                }
                 shuffleNReset(); // wakeAll();
                 placeCardsOnTable();
                 reset = true;
