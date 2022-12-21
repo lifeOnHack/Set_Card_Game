@@ -66,18 +66,24 @@ public class Table {
         synchronized (slotToCard) {
             synchronized (playersSets[p.id]) {
                 for (int i = 0; i < MAX_TOKENS; i++) {
-                    if (playersSets[p.id][i] != -1 && slotToCard[playersSets[p.id][i]] != null) {
+                    if (playersSets[p.id][i] != NOT_PLACED && slotToCard[playersSets[p.id][i]] != null) {
                         curTockens++;
                         set[i] = slotToCard[playersSets[p.id][i]];
                     } else {
+                        if (playersSets[p.id][i] != NOT_PLACED) {
+                            env.ui.removeToken(p.id, playersSets[p.id][i]);
+                            playersSets[p.id][i] = NOT_PLACED;
+                        }
                         falseSet = true;
                     }
                 }
             }
         }
-        p.fixTockens(curTockens);
-        p.notifyInputQ();
-        p.myState.setState(STATES.FREE_TO_GO);
+        if (falseSet) {
+            p.fixTockens(curTockens);
+            p.notifyInputQ();
+            p.myState.setState(STATES.FREE_TO_GO);
+        }
         return falseSet ? null : set;
     }
 
@@ -234,7 +240,6 @@ public class Table {
                 pTokens[j] = NOT_PLACED;
             }
         }
-        // System.out.println("player" + id + " reset");
     }
 
     public void resetPlayer(int pId) {
@@ -272,7 +277,6 @@ public class Table {
                 rmvReq(players[i], requests);
             }
         }
-        System.out.println("remove at point done");
     }
 
     private void rmvReq(Player p, LinkedList<Integer> requests) {

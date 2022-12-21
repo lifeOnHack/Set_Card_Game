@@ -259,14 +259,13 @@ public class Dealer implements Runnable {
             }
         }
         int[] winners = new int[numOfWinners];
-        for(int i = 0; i < players.length; i++){
+        for (int i = 0; i < players.length; i++) {
             if (players[i].getScore() == bestScore) {
                 winners[--numOfWinners] = i;
             }
         }
         env.ui.announceWinner(winners);
     }
-
 
     public void addCheckReq(int p) {
         synchronized (plysCheckReq) {
@@ -275,10 +274,6 @@ public class Dealer implements Runnable {
         }
         players[p].myState.setState(STATES.WAIT_FOR_RES);// freez player till results
         // System.out.println("player" + p + " request check");
-    }
-
-    public LinkedList<Integer> getPlysCheckReq(){
-        return plysCheckReq;
     }
 
     private void checkPlyrsSets() {

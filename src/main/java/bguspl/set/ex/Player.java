@@ -69,7 +69,6 @@ public class Player implements Runnable {
      */
     public Queue<Integer> inputQ;
     public StateLock myState;
-    private final int MAX_SLOTS = 11; // MN
     private final int Q_MAX_INP = 3;// MN
     private final int SEC = 1000;// MN
 
@@ -233,7 +232,7 @@ public class Player implements Runnable {
             Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
-                playerThread.sleep(SEC / 2);
+                Thread.sleep(SEC / 2);
             }
 
         } catch (InterruptedException ignr) {
@@ -253,7 +252,7 @@ public class Player implements Runnable {
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
-                playerThread.sleep(SEC / 2);
+                Thread.sleep(SEC / 2);
             }
         } catch (InterruptedException ignr) {
         }

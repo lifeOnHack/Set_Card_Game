@@ -54,11 +54,6 @@ public class StateLock {
                 resFunc = null;
             }
         }
-        /*
-         * synchronized (this) {
-         * state = STATES.FREE_TO_GO;
-         * }
-         */
     }
 
     public void assignPoint() {
