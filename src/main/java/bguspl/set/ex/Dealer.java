@@ -134,8 +134,8 @@ public class Dealer implements Runnable {
         if (curset != null) {
             table.removeAtPoint(curset[0], curset[1], curset[2], players, plysCheckReq);
             for (int i = 0; i < curset.length; i++) {
+                env.ui.removeTokens(table.getCTS()[curset[i]]);
                 table.removeByCard(curset[i]);
-                // env.ui.removeTokens(cardToSlot[i]);
             }
             if (env.config.turnTimeoutMillis >= 0) {
                 updateTimerDisplay(true);// means someone make point
@@ -282,19 +282,23 @@ public class Dealer implements Runnable {
         }
         updateTimerDisplay(false);
         if (curPly != -1) {
-            Integer[] set = table.getPlyrTok(curPly);
-            synchronized (set) {
-                try {
-                    Integer[] stc = table.getSTC();
-                    synchronized (stc) {
-                        this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
-                    }
-                } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-                    players[curPly].reset();
-                    System.out.println(e);
+            // Integer[] set = table.getPlyrTok(curPly);
+            // synchronized (set) {
+            try {
+                // Integer[] stc = table.getSTC();
+                // synchronized (stc) {
+                // this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
+                // }
+
+                if (null == (this.curset = table.getPSet(players[curPly])))
                     return;
-                }
+
+            } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+                players[curPly].reset();
+                System.out.println(e);
+                return;
             }
+            // }
             updateTimerDisplay(false);
             if (env.util.testSet(curset)) {
                 synchronized (players[curPly].myState) {

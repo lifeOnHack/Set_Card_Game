@@ -47,12 +47,36 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
-        this.playersSets = new Integer[env.config.players][3];
+        this.playersSets = new Integer[env.config.players][MAX_TOKENS];
         reset();
     }
 
     public Integer[] getSTC() {
         return slotToCard;
+    }
+
+    public Integer[] getCTS() {
+        return cardToSlot;
+    }
+
+    public int[] getPSet(Player p) {
+        int[] set = new int[MAX_TOKENS];
+        int curTockens = 0;
+        boolean falseSet = false;
+        synchronized (playersSets[p.id]) {
+            synchronized (slotToCard) {
+                for (int i = 0; i < MAX_TOKENS; i++) {
+                    if (playersSets[p.id][i] != -1 && slotToCard[playersSets[p.id][i]] != null) {
+                        curTockens++;
+                        set[i] = slotToCard[playersSets[p.id][i]];
+                    } else {
+                        falseSet = true;
+                    }
+                }
+            }
+        }
+        p.fixTockens(curTockens);
+        return falseSet ? null : set;
     }
 
     /**
@@ -143,13 +167,15 @@ public class Table {
      */
     public int placeToken(int pId, int slot) {
         Integer[] pTokens = playersSets[pId];
-        if (slotToCard[slot] != null) {
-            for (int i = 0; i < MAX_TOKENS; i++) {
-                synchronized (pTokens) {
-                    if (NOT_PLACED == pTokens[i]) {
-                        pTokens[i] = slot;
-                        env.ui.placeToken(pId, slot);
-                        return 1;
+        synchronized (slotToCard) {
+            if (slotToCard[slot] != null) {
+                for (int i = 0; i < MAX_TOKENS; i++) {
+                    synchronized (pTokens) {
+                        if (NOT_PLACED == pTokens[i]) {
+                            pTokens[i] = slot;
+                            env.ui.placeToken(pId, slot);
+                            return 1;
+                        }
                     }
                 }
             }
