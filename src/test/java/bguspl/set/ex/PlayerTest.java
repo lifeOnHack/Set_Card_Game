@@ -16,9 +16,6 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PlayerTest {
@@ -54,7 +51,7 @@ class PlayerTest {
     }
 
     @Test
-    void keyPressed_insertOneElem(){
+    void keyPressed_insertOneElem() {
         assertTrue(player.inputQ.isEmpty());
         int elem = 2;
         player.keyPressed(elem);
@@ -64,7 +61,7 @@ class PlayerTest {
     }
 
     @Test
-    void keyPressed_insertThreeElem(){
+    void keyPressed_insertThreeElem() {
         assertTrue(player.inputQ.isEmpty());
         int elem1 = 2;
         int elem2 = 7;
@@ -80,7 +77,7 @@ class PlayerTest {
     }
 
     @Test
-    void keyPressed_insertFourElem(){
+    void keyPressed_insertFourElem() {
         assertTrue(player.inputQ.isEmpty());
         int elem1 = 2;
         int elem2 = 7;
@@ -99,7 +96,7 @@ class PlayerTest {
     }
 
     @Test
-    void keyPressed_insertSameElemMultTimes(){
+    void keyPressed_insertSameElemMultTimes() {
         assertTrue(player.inputQ.isEmpty());
         int elem = 3;
         player.keyPressed(elem);
@@ -109,25 +106,26 @@ class PlayerTest {
         assertTrue(player.inputQ.contains(elem));
     }
 
-
-
     /*
-    @Test
-    void point() {
-
-        // force table.countCards to return 3
-        when(table.countCards()).thenReturn(3); // this part is just for demonstration
-
-        // calculate the expected score for later
-        int expectedScore = player.getScore() + 1;
-
-        // call the method we are testing
-        player.point();
-
-        // check that the score was increased correctly
-        assertEquals(expectedScore, player.getScore());
-
-        // check that ui.setScore was called with the player's id and the correct score
-        verify(ui).setScore(eq(player.id), eq(expectedScore));
-    }*/
+     * @Test
+     * void point() {
+     * 
+     * // force table.countCards to return 3
+     * when(table.countCards()).thenReturn(3); // this part is just for
+     * demonstration
+     * 
+     * // calculate the expected score for later
+     * int expectedScore = player.getScore() + 1;
+     * 
+     * // call the method we are testing
+     * player.point();
+     * 
+     * // check that the score was increased correctly
+     * assertEquals(expectedScore, player.getScore());
+     * 
+     * // check that ui.setScore was called with the player's id and the correct
+     * score
+     * verify(ui).setScore(eq(player.id), eq(expectedScore));
+     * }
+     */
 }
