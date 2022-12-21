@@ -219,25 +219,29 @@ public class Table {
 
     public void removeAtPoint(int c1, int c2, int c3, Player[] players, LinkedList<Integer> requests) {
         for (int i = 0; i < playersSets.length; i++) {
+            Boolean isNeedRemove = false;
             synchronized (playersSets[i]) {// so the player cant add\remove tokens
                 for (int j = 0; j < playersSets[i].length; j++) {
                     if (playersSets[i][j] == cardToSlot[c1]) {
                         if (removeToken(i, cardToSlot[c1])) {
                             players[i].tokenGotRemoved();
-                            rmvReq(players[i], requests);
+                            isNeedRemove = true;
                         }
                     } else if (playersSets[i][j] == cardToSlot[c2]) {
                         if (removeToken(i, cardToSlot[c2])) {
                             players[i].tokenGotRemoved();
-                            rmvReq(players[i], requests);
+                            isNeedRemove = true;
                         }
                     } else if (playersSets[i][j] == cardToSlot[c3]) {
                         if (removeToken(i, cardToSlot[c3])) {
                             players[i].tokenGotRemoved();
-                            rmvReq(players[i], requests);
+                            isNeedRemove = true;
                         }
                     }
                 }
+            }
+            if (isNeedRemove) {
+                rmvReq(players[i], requests);
             }
         }
         System.out.println("remove at point done");
@@ -249,9 +253,9 @@ public class Table {
             if (requests.contains(p.id)) {
                 System.out.println("remove at point p" + p.id);
                 requests.remove(id);
-                p.myState.setState(STATES.FREE_TO_GO);
-                p.myState.wakeup();
             }
+            p.myState.setState(STATES.FREE_TO_GO);
+            p.myState.wakeup();
         }
     }
 }
