@@ -76,8 +76,9 @@ public class Dealer implements Runnable {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
         initPlyrsThread();
         boolean s = true;
-        shuffleNReset();
+
         while (!shouldFinish()) {
+            shuffleNReset();
             placeCardsOnTable();
             updateTimerDisplay(true);
             if (s) {
@@ -103,6 +104,9 @@ public class Dealer implements Runnable {
             updateTimerDisplay(false);
             removeCardsFromTable();// iff needed
             placeCardsOnTable();// iff needed
+        }
+        for (Player p : players) {
+            p.myState.setState(STATES.STOP);
         }
     }
 
@@ -190,11 +194,13 @@ public class Dealer implements Runnable {
             // setElapsed
         } else if (env.config.turnTimeoutMillis == 0) {// start from zero up =0
             if (env.util.findSets(deckToCheck(), 1).size() == 0) {
-                // stopAll();
+                for (Player p : players) {
+                    p.myState.setState(STATES.STOP);
+                }
                 removeAllCardsFromTable();
+                shuffleNReset(); // wakeAll();
                 placeCardsOnTable();
                 reset = true;
-                // wakeAll();
             }
             if (reset) {
                 reshuffleTime = System.currentTimeMillis();
@@ -232,8 +238,6 @@ public class Dealer implements Runnable {
                 table.removeCard(i);
             }
         }
-        // cuz this func accure when round is over
-        shuffleNReset();
     }
 
     /**

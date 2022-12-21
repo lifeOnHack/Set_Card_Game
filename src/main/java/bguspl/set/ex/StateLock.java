@@ -25,6 +25,9 @@ public class StateLock {
     }
 
     public synchronized void setState(STATES newS) {
+        if (STATES.STOP == newS) {
+            delRun();
+        }
         state = newS;
         notifyAll();
     }
@@ -46,7 +49,7 @@ public class StateLock {
     public void makeAction() {
 
         synchronized (runLock) {
-            if (resFunc != null) {
+            if (resFunc != null) {// cuz of the stync dealer need to wait for ending of penallty
                 resFunc.run();
                 resFunc = null;
             }
@@ -64,7 +67,6 @@ public class StateLock {
                 @Override
                 public void run() {
                     p.point();
-                    //p.reset();
                 }
             };
         }
