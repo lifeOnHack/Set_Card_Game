@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,5 +71,39 @@ class DealerTest {
         int[] winners = {2, 1, 0};
         dealer.announceWinners();
         verify(env.ui).announceWinner(winners);
+    }
+
+    @Test
+    void deckToCheck_emptyTable(){
+        Integer[] emptyArray = new Integer[12];
+        when(table.getSTC()).thenReturn(emptyArray);
+        LinkedList<Integer> res = dealer.deckToCheck();
+        assertTrue(res.isEmpty());
+    }
+
+    @Test
+    void deckToCheck_twoCardsOnTable(){
+        Integer[] tableCards = new Integer[12];
+        tableCards[2] = 5;
+        tableCards[7] = 9;
+        when(table.getSTC()).thenReturn(tableCards);
+        LinkedList<Integer> res = dealer.deckToCheck();
+        assertFalse(res.isEmpty());
+        assertTrue(res.contains(tableCards[2]));
+        assertTrue(res.contains(tableCards[7]));
+    }
+
+    @Test
+    void deckToCheck_fullTable(){
+        Integer[] tableCards = new Integer[12];
+        for (int i = 0; i<tableCards.length; i++) {
+            tableCards[i] = i;
+        }
+        when(table.getSTC()).thenReturn(tableCards);
+        LinkedList<Integer> res = dealer.deckToCheck();
+        assertFalse(res.isEmpty());
+        for (int i = 0; i<tableCards.length; i++) {
+            assertTrue(res.contains(tableCards[i]));
+        }
     }
 }
