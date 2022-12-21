@@ -215,7 +215,7 @@ public class Dealer implements Runnable {
         }
     }
 
-    private LinkedList<Integer> deckToCheck() {
+    public LinkedList<Integer> deckToCheck() {
         LinkedList<Integer> res = new LinkedList<Integer>();
         for (Integer intg : table.getSTC()) {
             if (intg != null) {
@@ -244,7 +244,7 @@ public class Dealer implements Runnable {
     /**
      * Check who is/are the winner/s and displays them.
      */
-    private void announceWinners() {
+    public void announceWinners() {
         int bestScore = -1;
         int numOfWinners = 0;
         for (Player player : players) {
@@ -256,9 +256,9 @@ public class Dealer implements Runnable {
             }
         }
         int[] winners = new int[numOfWinners];
-        for (Player player : players) {
-            if (player.getScore() == bestScore) {
-                winners[--numOfWinners] = player.id;
+        for(int i = 0; i < players.length; i++){
+            if (players[i].getScore() == bestScore) {
+                winners[--numOfWinners] = i;
             }
         }
         env.ui.announceWinner(winners);

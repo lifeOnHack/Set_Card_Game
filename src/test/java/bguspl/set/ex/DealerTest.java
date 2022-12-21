@@ -24,12 +24,16 @@ import static org.mockito.Mockito.when;
 class DealerTest {
     
     private Dealer dealer;
-    private Player[] players;
+    private Env env;
     private Config config;
     @Mock
-    private Table table;
+    private Player player0;
     @Mock
-    private Player player;
+    private Player player1;
+    @Mock
+    private Player player2;
+    @Mock
+    private Table table;
     @Mock
     private Logger logger;
     @Mock
@@ -41,13 +45,30 @@ class DealerTest {
     @BeforeEach
     void setUp(){
         config = new Config(logger, "");
-        Env env = new Env(logger, config, ui, util);
-        players = new Player[env.config.players];
+        env = new Env(logger, config, ui, util);
+        Player[] players = {player0, player1, player2};
         dealer = new Dealer(env, table, players);
     }
 
     @Test
-    void addCheckReq_ab(){
-       assertTrue(true); 
+    void announceWinners_oneWinner(){
+        when(player0.getScore()).thenReturn(3);
+        when(player1.getScore()).thenReturn(5);
+        when(player2.getScore()).thenReturn(6);
+        
+        int[] winners = {2};
+        dealer.announceWinners();
+        verify(env.ui).announceWinner(winners);
+    }
+
+    @Test
+    void announceWinners_threeWinners(){
+        when(player0.getScore()).thenReturn(6);
+        when(player1.getScore()).thenReturn(6);
+        when(player2.getScore()).thenReturn(6);
+        
+        int[] winners = {2, 1, 0};
+        dealer.announceWinners();
+        verify(env.ui).announceWinner(winners);
     }
 }
