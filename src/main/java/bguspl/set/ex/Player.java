@@ -228,7 +228,6 @@ public class Player implements Runnable {
         env.ui.setScore(id, ++score);
         // System.out.println("fuunnn player " + id + " got point");
         try {
-            // Thread.sleep(env.config.pointFreezeMillis);
             Long endFrz = System.currentTimeMillis() + env.config.pointFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
@@ -247,8 +246,6 @@ public class Player implements Runnable {
     public void penalty() {
         // System.out.println("damn player " + id + " penalised");
         try {
-            // Thread.sleep(env.config.penaltyFreezeMillis);
-
             Long endFrz = System.currentTimeMillis() + env.config.penaltyFreezeMillis;
             while (System.currentTimeMillis() < endFrz) {
                 env.ui.setFreeze(id, endFrz - System.currentTimeMillis());
@@ -276,10 +273,10 @@ public class Player implements Runnable {
         synchronized (this) {
             usedTockens = 0;
         }
-        myState.delRun();
+        //myState.delRun();
         myState.setState(STATES.FREE_TO_GO);
         table.resetPlayer(id);
-        System.out.println("reset player" + id);
+        //System.out.println("reset player" + id);
     }
 
     public void notifyInputQ() {

@@ -209,11 +209,16 @@ public class Dealer implements Runnable {
             if (reset) {
                 reshuffleTime = System.currentTimeMillis();
             }
-            env.ui.setCountdown(t - reshuffleTime, false);
+            env.ui.setElapsed(t - reshuffleTime);
         } else {// <0
             if (env.util.findSets(deckToCheck(), 1).size() == 0) {
                 reshuffleTime = System.currentTimeMillis() - MIN_IN_MS;
-                System.out.println("there is no set");
+                // System.out.println("there is no set");
+                removeAllCardsFromTable();
+                if (shouldFinish()) {
+                    terminate = true;
+                    return;
+                }
             } else {
                 reshuffleTime = Long.MAX_VALUE;
             }
@@ -273,7 +278,6 @@ public class Dealer implements Runnable {
             myThread.interrupt();
         }
         players[p].myState.setState(STATES.WAIT_FOR_RES);// freez player till results
-        // System.out.println("player" + p + " request check");
     }
 
     private void checkPlyrsSets() {
@@ -285,34 +289,21 @@ public class Dealer implements Runnable {
         }
         updateTimerDisplay(false);
         if (curPly != -1) {
-            // Integer[] set = table.getPlyrTok(curPly);
-            // synchronized (set) {
             try {
-                // Integer[] stc = table.getSTC();
-                // synchronized (stc) {
-                // this.curset = new int[] { stc[set[0]], stc[set[1]], stc[set[2]] };
-                // }
-
                 if (null == (this.curset = table.getPSet(players[curPly])))
                     return;
-
             } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                 players[curPly].reset();
                 System.out.println(e);
                 return;
             }
-            // }
             updateTimerDisplay(false);
             if (env.util.testSet(curset)) {
-                synchronized (players[curPly].myState) {
-                    players[curPly].myState.assignPoint();
-                    players[curPly].myState.wakeup();
-                }
+                players[curPly].myState.assignPoint();
+                players[curPly].myState.wakeup();
             } else {
-                synchronized (players[curPly].myState) {
-                    players[curPly].myState.assignPenalty();
-                    players[curPly].myState.wakeup();
-                }
+                players[curPly].myState.assignPenalty();
+                players[curPly].myState.wakeup();
                 this.curset = null;
             }
             updateTimerDisplay(false);

@@ -283,7 +283,7 @@ public class Table {
         Integer id = p.id;
         synchronized (requests) {
             if (requests.contains(p.id)) {
-                System.out.println("remove at point p" + p.id);
+                //System.out.println("remove at point p" + p.id);
                 requests.remove(id);
             }
             p.myState.setState(STATES.FREE_TO_GO);

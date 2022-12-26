@@ -16,7 +16,7 @@ public class StateLock {
     private Object runLock = new Object();
 
     StateLock(Player player) {
-        state = STATES.FREE_TO_GO; // STATES.STOP;
+        state = STATES.FREE_TO_GO;
         p = player;
     }
 
@@ -25,9 +25,6 @@ public class StateLock {
     }
 
     public synchronized void setState(STATES newS) {
-        if (STATES.STOP == newS) {
-            delRun();
-        }
         state = newS;
         notifyAll();
     }
